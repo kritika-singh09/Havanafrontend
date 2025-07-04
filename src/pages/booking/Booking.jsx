@@ -157,6 +157,7 @@ const Booking = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-2 text-left">Photo</th>
                   <th className="px-4 py-2 text-left">Name</th>
                   <th className="px-4 py-2 text-left">ID Number</th>
                   <th className="px-4 py-2 text-left">Phone</th>
@@ -171,6 +172,9 @@ const Booking = () => {
                 {currentBookings.length > 0 ? (
                   currentBookings.map((b) => (
                     <tr key={b._id}>
+                       <td className="px-4 py-2">
+  <img src={b.photoUrl} alt="Photo" className="w-16 h-16 object-cover rounded" />
+</td>
                       <td className="px-4 py-2">{b.name}</td>
                       <td className="px-4 py-2">{b.idProofNumber}</td>
                       <td className="px-4 py-2">{b.mobileNo || b.phoneNo}</td>
