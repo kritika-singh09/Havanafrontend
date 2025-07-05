@@ -1,166 +1,4 @@
 
-// // ✅ Keep this near the top (line 1–10)
-// import { Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
-
-// import { useEffect, useState } from "react";
-// // Removed AiFillCloseCircle, AiOutlineMenu as they will be replaced by lucide-react icons
-// import { LayoutDashboard, CalendarCheck, XCircle, Menu, LogOut } from 'lucide-react'; // Import lucide-react icons
-
-// import Calendar from "./pages/Calendar/calendar";
-// import Booking from "./pages/booking/Booking";
-// import AddBooking from "./pages/booking/AddBooking";
-// import logo from "./assets/pcs.png";
-// import PhotoIdUpload from "./pages/booking/PhotoIdUpload";
-// import EditBookingForm from "./pages/booking/EditBooking";
-
-
-// const App = () => {
-//   const navigate = useNavigate();
-//   const location = useLocation();
-//   const [activeLink, setActiveLink] = useState("dashboard");
-//   const currentUser = localStorage.getItem("currentUser"); // Keeping existing logic
-//   const role = localStorage.getItem("role"); // Keeping existing logic
-//   const name = localStorage.getItem("name"); // Keeping existing logic
-//   const [ml, setML] = useState(false);
-
-//   const handleLogout = () => {
-//     localStorage.clear();
-//     navigate("/login");
-//   };
-
-//   useEffect(() => {
-//     if (location.pathname === "/") setActiveLink("dashboard");
-//     else if (location.pathname.startsWith("/booking")) setActiveLink("booking");
-//   }, [location.pathname]);
-
-//   const toggleSidebar = () => { // Renamed setMl to toggleSidebar for clarity
-//     if (window.innerWidth < 1023) setML(!ml);
-//   };
-
-//   return (
-//     <>
-//       {/* Always rendering the dashboard while login is disabled */}
-//       <section className="bg-[#E0FBFC] dark:bg-gray-900 min-h-screen flex"> {/* Added flex and min-h-screen for better layout */}
-//         <aside
-//           className={
-//             ml
-//               ? "fixed top-0 z-40 ml-[0] flex h-screen w-full flex-col justify-between bg-gray-900 px-6 pb-3 text-white transition-all duration-300 ease-in-out shadow-lg md:w-4/12 lg:ml-0 lg:w-[25%] xl:w-[20%] 2xl:w-[15%] rounded-r-lg" // Added shadow and rounded corners
-//               : "fixed top-0 z-40 ml-[-100%] flex h-screen w-full flex-col justify-between bg-gray-900 px-6 pb-3 text-white transition-all duration-300 ease-in-out shadow-lg md:w-4/12 lg:ml-0 lg:w-[25%] xl:w-[20%] 2xl:w-[15%] rounded-r-lg"
-//           }
-//         >
-//           <div className="flex flex-col h-full">
-//             {/* Header */}
-//             <div className="-mx-6 px-6 py-4">
-//               {window.innerWidth < 1023 && (
-//                 <div className="flex items-center justify-between mb-4"> {/* Added margin-bottom */}
-//                   <button onClick={toggleSidebar} className="text-3xl text-white hover:text-gray-300 transition-colors"> {/* Increased size and added hover */}
-//                     <XCircle size={32} /> {/* Replaced AiFillCloseCircle with XCircle */}
-//                   </button>
-//                   <button onClick={handleLogout} className="group flex items-center space-x-2 text-white hover:text-gray-300 transition-colors"> {/* Adjusted space-x */}
-//                     <LogOut className="h-6 w-6 group-hover:scale-105 transition-transform" /> {/* Replaced SVG with LogOut icon */}
-//                     <span className="font-semibold text-lg">Logout</span> {/* Increased font size */}
-//                   </button>
-//                 </div>
-//               )}
-//               <h2 className="font-extrabold text-3xl mt-3 text-white flex items-center gap-2"> {/* Enhanced font and added flex for icon/text alignment */}
-//                 Hotel Havana <span className="text-sm font-normal align-super">©</span>
-//               </h2>
-//               {/* Horizontal line added here */}
-//               <div className="border-b border-gray-700 pb-4 mt-4"></div>
-//             </div>
-
-//             {/* Profile with logo */}
-//             <div className="mt-8 text-center"> {/* Increased margin-top */}
-//               <img
-//                 src={logo}
-//                 alt="admin"
-//                 className="m-auto h-20 w-20 rounded-full object-cover lg:h-28 lg:w-28 bg-white p-1 border-2 border-gray-600 shadow-md" // Made logo circular, added border and shadow
-//               />
-//               <h5 className="mt-4 hidden text-xl font-semibold text-white lg:block">{name}</h5>
-//               <span className="hidden text-gray-400 lg:block text-sm">{role}</span> {/* Adjusted text size */}
-//             </div>
-
-//             {/* Navigation */}
-//             <div className="flex-1 overflow-y-auto mt-10"> {/* Increased margin-top */}
-//               <ul className="space-y-3 tracking-wide"> {/* Increased space-y */}
-//                 <li onClick={() => { setActiveLink("dashboard"); navigate("/"); toggleSidebar(); }}>
-//                   <Link
-//                     to="/"
-//                     className={
-//                       activeLink === "dashboard"
-//                         ? "relative flex items-center space-x-4 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 px-4 py-3 text-white shadow-md transition-all duration-200" // Enhanced active state styling
-//                         : "relative flex items-center space-x-4 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200" // Enhanced hover state
-//                     }
-//                   >
-//                     <LayoutDashboard className="h-6 w-6" /> {/* Dashboard Icon */}
-//                     <span className="font-medium text-lg">Dashboard</span> {/* Increased font size */}
-//                   </Link>
-//                 </li>
-
-//                 <li onClick={() => { setActiveLink("booking"); navigate("/booking"); toggleSidebar(); }}>
-//                   <Link
-//                     to="/booking"
-//                     className={
-//                       activeLink === "booking"
-//                         ? "relative flex items-center space-x-4 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 px-4 py-3 text-white shadow-md transition-all duration-200" // Enhanced active state styling
-//                         : "relative flex items-center space-x-4 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200" // Enhanced hover state
-//                     }
-//                   >
-//                     <CalendarCheck className="h-6 w-6" /> {/* Booking Icon */}
-//                     <span className="font-medium text-lg">Booking</span> {/* Increased font size */}
-//                   </Link>
-//                 </li>
-//               </ul>
-//             </div>
-
-//             {/* Logout button at bottom (for larger screens) */}
-//             <div className="-mx-6 hidden md:flex items-center justify-center border-t border-gray-700 px-6 pt-4 pb-2"> {/* Adjusted padding */}
-//               <button onClick={handleLogout} className="group flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-700 w-full justify-center"> {/* Enhanced button styling */}
-//                 <LogOut className="h-6 w-6 group-hover:scale-105 transition-transform" /> {/* Replaced SVG with LogOut icon */}
-//                 <span className="font-semibold text-lg">Logout</span> {/* Increased font size */}
-//               </button>
-//             </div>
-//           </div>
-//         </aside>
-
-
-//         {/* Main Content */}
-//         <div className="ml-auto mb-6 lg:w-[75%] xl:w-[80%] 2xl:w-[85%] w-full"> {/* Adjusted width for full responsiveness */}
-//           <div className="sticky top-0 h-16 border-b bg-white dark:bg-gray-800 dark:border-gray-700 lg:py-2.5 shadow-sm"> {/* Added shadow */}
-//             <div className="flex items-center justify-between space-x-4 px-4 2xl:container h-full">
-//               <h5 className="text-2xl font-semibold text-gray-800 dark:text-white">{activeLink.toUpperCase()}</h5> {/* Adjusted font weight and color */}
-//               <button onClick={toggleSidebar} className="text-3xl lg:hidden font-medium text-gray-600 dark:text-white hover:text-gray-800 dark:hover:text-gray-200 transition-colors"> {/* Replaced AiOutlineMenu with Menu */}
-//                 <Menu size={32} />
-//               </button>
-//             </div>
-//           </div>
-
-//           <div className="px-6 pt-6 bg-white dark:bg-gray-900 min-h-[calc(100vh-4rem)]"> {/* Adjusted min-height for full content area */}
-//             <Routes>
-//               <Route path="/" element={<Calendar />} />
-//               <Route path="/booking" element={<Booking />} />
-//               <Route path="/booking/add" element={<AddBooking />} />
-//               <Route path="/booking/photo-id-upload" element={<PhotoIdUpload />} />
-//               <Route path="/booking/edit/:id" element={<EditBookingForm />} />
-//             </Routes>
-//           </div>
-//         </div>
-//       </section>
-
-//       {/* 🔴 Login disabled temporarily */}
-//       {/*
-//       ) : (
-//         <Routes>
-//           <Route path="/login" element={<Login />} />
-//         </Routes>
-//       )
-//       */}
-//     </>
-//   );
-// };
-
-// export default App;
-// ✅ Keep this near the top (line 1–10)
 import { Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 
 import { useEffect, useState } from "react";
@@ -172,6 +10,7 @@ import AddBooking from "./pages/booking/AddBooking";
 import logo from "./assets/pcs.png";
 import PhotoIdUpload from "./pages/booking/PhotoIdUpload";
 import EditBookingForm from "./pages/booking/EditBooking";
+import ViewBookingPage from "./pages/booking/viewBookingpage";
 
 
 const App = () => {
@@ -300,6 +139,7 @@ const App = () => {
               <Route path="/booking/add" element={<AddBooking />} />
               <Route path="/booking/photo-id-upload" element={<PhotoIdUpload />} />
               <Route path="/booking/edit/:id" element={<EditBookingForm />} />
+              <Route path="/booking/view/:id"element={<ViewBookingPage/>}/>
             </Routes>
           </div>
         </div>
