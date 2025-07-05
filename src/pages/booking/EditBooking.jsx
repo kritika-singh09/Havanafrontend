@@ -1,57 +1,1451 @@
 
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+// // import React, { useEffect, useState } from "react";
+// // import { useLocation, useNavigate, useParams } from "react-router-dom";
+// // import axios from "axios";
 
-// Import Heroicons for better UI
+// // // Import Heroicons for better UI
+// // import {
+// //     CalendarIcon,
+// //     ClockIcon,
+// //     UserIcon,
+// //     BuildingOfficeIcon,
+// //     IdentificationIcon,
+// //     WalletIcon,
+// //     HomeIcon,
+// //     ChevronDownIcon, // For selects
+// //     GlobeAltIcon, // For nationality
+// //     PhoneIcon,
+// //     EnvelopeIcon,
+// //     CakeIcon, // For birthday
+// //     SparklesIcon, // For anniversary
+// //     CurrencyRupeeIcon, // For rate
+// //     CheckBadgeIcon, // For status
+// //     DocumentTextIcon, // For GRC No, Booking Ref No
+// //     MapPinIcon, // For City, Arrived From, Destination
+// //     ChartBarIcon, // For Market Segment
+// //     BriefcaseIcon, // For Business Source
+// //     QuestionMarkCircleIcon, // For Purpose of Visit
+// //     TagIcon, // For Discount
+// //     BanknotesIcon, // For Payment Mode/Status
+// //     BuildingStorefrontIcon, // For Company GSTIN
+// //     MegaphoneIcon, // For Billing Instruction
+// //     SunIcon, // For Temperature
+// //     ComputerDesktopIcon, // For EPABX
+// //     StarIcon // For VIP
+// // } from '@heroicons/react/24/outline';
+
+
+// // const EditBookingForm = () => {
+// //     const { id } = useParams();
+// //     const location = useLocation();
+// //     const navigate = useNavigate();
+// //     const editingData = location.state?.editingData;
+
+// //     const [formData, setFormData] = useState(editingData || null);
+
+// //     useEffect(() => {
+// //         if (!editingData) {
+// //             // Using a custom modal/message box instead of alert()
+// //             // For this example, we'll just log and navigate.
+// //             // In a real app, you'd render a modal component.
+// //             console.error("No booking data provided for editing. Navigating back.");
+// //             navigate("/booking");
+// //         }
+// //     }, [editingData, navigate]);
+
+// //     const handleChange = (e) => {
+// //         const { name, value, type, checked } = e.target;
+// //         setFormData((prev) => ({
+// //             ...prev,
+// //             [name]: type === "checkbox" ? checked : value,
+// //         }));
+// //     };
+
+// //     const handleSubmit = async (e) => {
+// //         e.preventDefault();
+// //         try {
+// //             await axios.put(
+// //                 `https://havana-backend.vercel.app/api/bookings/${formData._id}`,
+// //                 formData
+// //             );
+// //             // Using a custom modal/message box instead of alert()
+// //             console.log("Booking updated successfully!"); // Log success
+// //             navigate("/booking");
+// //         } catch (error) {
+// //             console.error("Update failed", error);
+// //             // Using a custom modal/message box instead of alert()
+// //             console.error("Failed to update booking."); // Log error
+// //         }
+// //     };
+
+// //     // Styling classes for consistent look and responsiveness
+// //     const sectionTitleClass = "text-xl font-semibold text-gray-700 mb-3 border-b pb-2 border-gray-300 flex items-center gap-2";
+// //     const inputContainerClass = ""; // Will use gap on inner grid instead of mb
+// //     const inputClass = "w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500";
+// //     const checkboxLabelClass = "flex items-center gap-2 text-gray-700 font-medium";
+// //     const iconClass = "h-5 w-5 text-gray-500";
+// //     const labelClass = "block text-gray-700 text-sm font-bold mb-1"; // Reduced mb-2 to mb-1
+
+// //     if (!formData) return <div className="p-4 text-center text-lg font-medium text-gray-600">Loading booking details...</div>;
+
+// //     return (
+// //         <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl font-sans">
+// //             <h2 className="text-4xl font-bold text-center text-gray-900 mb-8 tracking-wide">Edit Booking</h2>
+// //             <form onSubmit={handleSubmit} className="space-y-6"> {/* Main vertical spacing */}
+
+// //                 {/* Booking Details and Guest Information (Paired in two columns) */}
+// //                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+// //                     {/* Booking Details */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><DocumentTextIcon className={iconClass} />Booking Details</h3>
+// //                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="grcNo" className={labelClass}>GRC No.</label>
+// //                                 <input type="text" name="grcNo" id="grcNo" value={formData.grcNo} placeholder="GRC No" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="checkInDate" className={labelClass}>Check-in Date</label>
+// //                                 <input type="date" name="checkInDate" id="checkInDate" value={formData.checkInDate} onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="checkOutDate" className={labelClass}>Check-out Date</label>
+// //                                 <input type="date" name="checkOutDate" id="checkOutDate" value={formData.checkOutDate} onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="days" className={labelClass}>Days</label>
+// //                                 <input type="number" name="days" id="days" value={formData.days} placeholder="Days" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="timeIn" className={labelClass}>Time In</label>
+// //                                 <input type="text" name="timeIn" id="timeIn" value={formData.timeIn} placeholder="Time In" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="timeOut" className={labelClass}>Time Out</label>
+// //                                 <input type="text" name="timeOut" id="timeOut" value={formData.timeOut} placeholder="Time Out" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+
+// //                     {/* Personal Info */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><UserIcon className={iconClass} />Guest Information</h3>
+// //                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="salutation" className={labelClass}>Salutation</label>
+// //                                 <input type="text" name="salutation" id="salutation" value={formData.salutation} placeholder="Salutation" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="name" className={labelClass}>Full Name</label>
+// //                                 <input type="text" name="name" id="name" value={formData.name} placeholder="Full Name" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="age" className={labelClass}>Age</label>
+// //                                 <input type="number" name="age" id="age" value={formData.age} placeholder="Age" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="gender" className={labelClass}>Gender</label>
+// //                                 <select name="gender" id="gender" value={formData.gender} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>Male</option>
+// //                                     <option>Female</option>
+// //                                     <option>Other</option>
+// //                                 </select>
+// //                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-1"}>
+// //                                 <label htmlFor="address" className={labelClass}>Address</label>
+// //                                 <input type="text" name="address" id="address" value={formData.address} placeholder="Address" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="city" className={labelClass}>City</label>
+// //                                 <input type="text" name="city" id="city" value={formData.city} placeholder="City" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="nationality" className={labelClass}>Nationality</label>
+// //                                 <input type="text" name="nationality" id="nationality" value={formData.nationality} readOnly className={inputClass + " bg-gray-100 cursor-not-allowed"} />
+// //                                 <GlobeAltIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="mobileNo" className={labelClass}>Mobile No.</label>
+// //                                 <input type="text" name="mobileNo" id="mobileNo" value={formData.mobileNo} placeholder="Mobile No." onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="email" className={labelClass}>Email</label>
+// //                                 <input type="email" name="email" id="email" value={formData.email} placeholder="Email" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="phoneNo" className={labelClass}>Phone No.</label>
+// //                                 <input type="text" name="phoneNo" id="phoneNo" value={formData.phoneNo} placeholder="Phone No." onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="birthDate" className={labelClass}>Birth Date</label>
+// //                                 <input type="date" name="birthDate" id="birthDate" value={formData.birthDate} onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="anniversary" className={labelClass}>Anniversary</label>
+// //                                 <input type="date" name="anniversary" id="anniversary" value={formData.anniversary} onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+// //                 </div>
+
+// //                 {/* Company & ID Info (Paired in two columns) */}
+// //                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+// //                     {/* Company Details */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><BuildingOfficeIcon className={iconClass} />Company Details</h3>
+// //                         <div className="grid grid-cols-1 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="companyName" className={labelClass}>Company Name</label>
+// //                                 <input type="text" name="companyName" id="companyName" value={formData.companyName} placeholder="Company Name" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="companyGSTIN" className={labelClass}>Company GSTIN</label>
+// //                                 <input type="text" name="companyGSTIN" id="companyGSTIN" value={formData.companyGSTIN} placeholder="Company GSTIN" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+
+// //                     {/* ID Proof */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><IdentificationIcon className={iconClass} />ID Proof</h3>
+// //                         <div className="grid grid-cols-1 gap-4">
+// //                             <div className="relative">
+// //                                 <label htmlFor="idProofType" className={labelClass}>ID Proof Type</label>
+// //                                 <select name="idProofType" id="idProofType" value={formData.idProofType} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>Aadhaar Card</option>
+// //                                     <option>PAN Card</option>
+// //                                     <option>Driving License</option>
+// //                                     <option>Passport</option>
+// //                                 </select>
+// //                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="idProofNumber" className={labelClass}>ID Number</label>
+// //                                 <input type="text" name="idProofNumber" id="idProofNumber" value={formData.idProofNumber} placeholder="ID Number" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+// //                 </div>
+
+// //                 {/* Room & Rate Details and Travel & Purpose (Paired in two columns) */}
+// //                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+// //                     {/* Room & Rate Details */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><HomeIcon className={iconClass} />Room & Rate Details</h3>
+// //                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="roomNo" className={labelClass}>Room No.</label>
+// //                                 <input type="text" name="roomNo" id="roomNo" value={formData.roomNo} placeholder="Room No." onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="planPackage" className={labelClass}>Plan Package</label>
+// //                                 <input type="text" name="planPackage" id="planPackage" value={formData.planPackage} placeholder="Plan Package" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="noOfAdults" className={labelClass}>No. of Adults</label>
+// //                                 <input type="number" name="noOfAdults" id="noOfAdults" value={formData.noOfAdults} placeholder="No. of Adults" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="noOfChildren" className={labelClass}>No. of Children</label>
+// //                                 <input type="number" name="noOfChildren" id="noOfChildren" value={formData.noOfChildren} placeholder="No. of Children" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="rate" className={labelClass}>Rate</label>
+// //                                 <input type="number" name="rate" id="rate" value={formData.rate} placeholder="Rate" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass + " sm:col-span-2 flex flex-wrap gap-x-6 gap-y-2 mt-2"}>
+// //                                 <label htmlFor="taxIncluded" className={checkboxLabelClass}>
+// //                                     <input type="checkbox" name="taxIncluded" id="taxIncluded" checked={formData.taxIncluded} onChange={handleChange} className="mr-1" />
+// //                                     Tax Included
+// //                                 </label>
+// //                                 <label htmlFor="serviceCharge" className={checkboxLabelClass}>
+// //                                     <input type="checkbox" name="serviceCharge" id="serviceCharge" checked={formData.serviceCharge} onChange={handleChange} className="mr-1" />
+// //                                     Service Charge
+// //                                 </label>
+// //                                 <label htmlFor="isLeader" className={checkboxLabelClass}>
+// //                                     <input type="checkbox" name="isLeader" id="isLeader" checked={formData.isLeader} onChange={handleChange} className="mr-1" />
+// //                                     Is Leader
+// //                                 </label>
+// //                             </div>
+// //                         </div>
+// //                     </div>
+
+// //                     {/* Travel & Purpose */}
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><WalletIcon className={iconClass} />Travel & Purpose</h3>
+// //                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="arrivedFrom" className={labelClass}>Arrived From</label>
+// //                                 <input type="text" name="arrivedFrom" id="arrivedFrom" value={formData.arrivedFrom} placeholder="Arrived From" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="destination" className={labelClass}>Destination</label>
+// //                                 <input type="text" name="destination" id="destination" value={formData.destination} placeholder="Destination" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="remark" className={labelClass}>Remark</label>
+// //                                 <input type="text" name="remark" id="remark" value={formData.remark} placeholder="Remark" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="businessSource" className={labelClass}>Business Source</label>
+// //                                 <input type="text" name="businessSource" id="businessSource" value={formData.businessSource} placeholder="Business Source" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="marketSegment" className={labelClass}>Market Segment</label>
+// //                                 <input type="text" name="marketSegment" id="marketSegment" value={formData.marketSegment} placeholder="Market Segment" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="purposeOfVisit" className={labelClass}>Purpose of Visit</label>
+// //                                 <input type="text" name="purposeOfVisit" id="purposeOfVisit" value={formData.purposeOfVisit} placeholder="Purpose of Visit" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+// //                 </div>
+
+// //                 {/* Payment & Discount (Full width section for better layout of many fields) */}
+// //                 <div className="grid grid-cols-1 gap-y-4">
+// //                     <div>
+// //                         <h3 className={sectionTitleClass}><BanknotesIcon className={iconClass} />Payment & Miscellaneous</h3>
+// //                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="discountPercent" className={labelClass}>Discount (%)</label>
+// //                                 <input type="number" name="discountPercent" id="discountPercent" value={formData.discountPercent} placeholder="Discount (%)" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="discountRoomSource" className={labelClass}>Discount Room Source</label>
+// //                                 <input type="number" name="discountRoomSource" id="discountRoomSource" value={formData.discountRoomSource} placeholder="Discount Room Source" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="paymentMode" className={labelClass}>Payment Mode</label>
+// //                                 <select name="paymentMode" id="paymentMode" value={formData.paymentMode} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>Cash</option>
+// //                                     <option>Card</option>
+// //                                     <option>UPI</option>
+// //                                     <option>Bank Transfer</option>
+// //                                 </select>
+// //                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="paymentStatus" className={labelClass}>Payment Status</label>
+// //                                 <select name="paymentStatus" id="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>Pending</option>
+// //                                     <option>Paid</option>
+// //                                     <option>Partial</option>
+// //                                     <option>Failed</option>
+// //                                 </select>
+// //                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="bookingRefNo" className={labelClass}>Booking Ref No.</label>
+// //                                 <input type="text" name="bookingRefNo" id="bookingRefNo" value={formData.bookingRefNo} placeholder="Booking Ref No." onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="mgmtBlock" className={labelClass}>Management Block</label>
+// //                                 <select name="mgmtBlock" id="mgmtBlock" value={formData.mgmtBlock} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>No</option>
+// //                                     <option>Yes</option>
+// //                                 </select>
+// //                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2"}>
+// //                                 <label htmlFor="billingInstruction" className={labelClass}>Billing Instruction</label>
+// //                                 <input type="text" name="billingInstruction" id="billingInstruction" value={formData.billingInstruction} placeholder="Billing Instruction" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass}>
+// //                                 <label htmlFor="temperature" className={labelClass}>Temperature (°C)</label>
+// //                                 <input type="number" name="temperature" id="temperature" value={formData.temperature} placeholder="Temperature" onChange={handleChange} className={inputClass} />
+// //                             </div>
+// //                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2 flex flex-wrap gap-x-6 gap-y-2"}>
+                            
+// //                                 <label htmlFor="vip" className={checkboxLabelClass}>
+// //                                     <input type="checkbox" name="vip" id="vip" checked={formData.vip} onChange={handleChange} className="mr-1" />
+// //                                     VIP
+// //                                 </label>
+// //                             </div>
+// //                             <div className="relative">
+// //                                 <label htmlFor="status" className={labelClass}>Status</label>
+// //                                 <select name="status" id="status" value={formData.status} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+// //                                     <option>Booked</option>
+// //                                     <option>Checked In</option>
+// //                                     <option>Checked Out</option>
+// //                                     <option>Cancelled</option>
+// //                                 </select>
+// //                                 <CheckBadgeIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+// //                             </div>
+// //                         </div>
+// //                     </div>
+// //                 </div>
+
+// //                 {/* Action Buttons */}
+// //                 <div className="col-span-full flex justify-center mt-6 gap-4">
+// //                     <button
+// //                         type="submit"
+// //                         className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
+// //                     >
+// //                         Update Booking
+// //                     </button>
+// //                     <button
+// //                         type="button"
+// //                         onClick={() => navigate("/booking")}
+// //                         className="bg-gray-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
+// //                     >
+// //                         Cancel
+// //                     </button>
+// //                 </div>
+// //             </form>
+// //         </div>
+// //     );
+// // };
+
+// // export default EditBookingForm;
+// // Import React, useState, useEffect, useCallback, useRef for the components
+// import React, { useState, useEffect, useCallback, useRef } from "react";
+// import { useLocation, useNavigate, useParams } from "react-router-dom";
+// import axios from "axios";
+// import toast, { Toaster } from 'react-hot-toast';
+// import Webcam from 'react-webcam';
+
+// // Import Heroicons for better UI
+// import {
+//     CalendarIcon,
+//     ClockIcon,
+//     UserIcon,
+//     BuildingOfficeIcon,
+//     IdentificationIcon,
+//     WalletIcon,
+//     HomeIcon,
+//     ChevronDownIcon, // For selects
+//     GlobeAltIcon, // For nationality
+//     PhoneIcon,
+//     EnvelopeIcon,
+//     CakeIcon, // For birthday
+//     SparklesIcon, // For anniversary
+//     CurrencyRupeeIcon, // For rate
+//     CheckBadgeIcon, // For status
+//     DocumentTextIcon, // For GRC No, Booking Ref No
+//     MapPinIcon, // For City, Arrived From, Destination
+//     ChartBarIcon, // For Market Segment
+//     BriefcaseIcon, // For Business Source
+//     QuestionMarkCircleIcon, // For Purpose of Visit
+//     TagIcon, // For Discount
+//     BanknotesIcon, // For Payment Mode/Status
+//     BuildingStorefrontIcon, // For Company GSTIN
+//     MegaphoneIcon, // For Billing Instruction
+//     SunIcon, // For Temperature
+//     ComputerDesktopIcon, // For EPABX
+//     StarIcon, // For VIP
+//     ArrowUturnLeftIcon, // For the back button
+//     CameraIcon // New icon for webcam/capture
+// } from '@heroicons/react/24/outline';
+
+
+// // --- PhotoIdUpload Component (Modal) ---
+// const PhotoIdUpload = ({ onClose, onSaveImages, currentFiles }) => {
+//     // Initialize states with currentFiles passed from parent, or null if not provided
+//     // We'll store the base64 data URLs directly here for immediate display in the modal
+//     const [studentAvatarPreview, setStudentAvatarPreview] = useState(currentFiles?.studentAvatar || null);
+//     const [idProofFrontPreview, setIdProofFrontPreview] = useState(currentFiles?.idProofFront || null);
+//     const [idProofBackPreview, setIdProofBackPreview] = useState(currentFiles?.idProofBack || null);
+
+//     // State to track which webcam is active for capture
+//     const [activeWebcam, setActiveWebcam] = useState(null); // Can be 'student', 'front', 'back'
+
+//     const webcamRef = useRef(null);
+
+//     // Handler for capturing image from webcam
+//     const captureImage = useCallback((setImageState) => {
+//         if (webcamRef.current) {
+//             const imageSrc = webcamRef.current.getScreenshot();
+//             if (imageSrc) {
+//                 setImageState(imageSrc); // Store the base64 data URL
+//                 setActiveWebcam(null); // Deactivate webcam after capture
+//                 toast.success('Image captured successfully!');
+//             }
+//         }
+//     }, [webcamRef]);
+
+//     const handleUploadButtonClick = () => {
+//         // Pass all captured base64 image data back to the parent
+//         onSaveImages({
+//             studentAvatar: studentAvatarPreview,
+//             idProofFront: idProofFrontPreview,
+//             idProofBack: idProofBackPreview,
+//         });
+//         onClose(); // Close the modal
+//         toast.success('Photos saved!');
+//     };
+
+//     return (
+//         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
+//             <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 space-y-6 overflow-y-auto max-h-[90vh]">
+//                 <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">Upload Guest Photos & ID Proofs</h2>
+
+//                 {/* Webcam Section */}
+//                 {activeWebcam && (
+//                     <div className="flex flex-col items-center justify-center p-4 border border-blue-300 rounded-lg bg-blue-50">
+//                         <Webcam
+//                             audio={false}
+//                             ref={webcamRef}
+//                             screenshotFormat="image/jpeg"
+//                             className="rounded-md w-full max-w-md h-auto mb-4"
+//                         />
+//                         <button
+//                             onClick={() => {
+//                                 if (activeWebcam === 'student') captureImage(setStudentAvatarPreview);
+//                                 else if (activeWebcam === 'front') captureImage(setIdProofFrontPreview);
+//                                 else if (activeWebcam === 'back') captureImage(setIdProofBackPreview);
+//                             }}
+//                             className="bg-green-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-700 transition duration-200 flex items-center gap-2"
+//                         >
+//                             <CameraIcon className="h-5 w-5" /> Capture Photo
+//                         </button>
+//                     </div>
+//                 )}
+
+//                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+//                     {/* Student Avatar */}
+//                     <div className="flex flex-col items-center p-4 border border-gray-200 rounded-lg shadow-sm">
+//                         <h4 className="font-semibold text-lg text-gray-700 mb-3">Guest Avatar</h4>
+//                         {studentAvatarPreview ? (
+//                             <img src={studentAvatarPreview} alt="Guest Avatar" className="w-32 h-32 object-cover rounded-full mb-3 border-2 border-blue-400" />
+//                         ) : (
+//                             <div className="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 mb-3">
+//                                 <UserIcon className="w-12 h-12" />
+//                             </div>
+//                         )}
+//                         <div className="flex gap-2">
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setActiveWebcam('student')}
+//                                 className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition"
+//                             >
+//                                 Use Webcam
+//                             </button>
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setStudentAvatarPreview(null)}
+//                                 className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition"
+//                                 disabled={!studentAvatarPreview}
+//                             >
+//                                 Clear
+//                             </button>
+//                         </div>
+//                     </div>
+
+//                     {/* ID Proof Front */}
+//                     <div className="flex flex-col items-center p-4 border border-gray-200 rounded-lg shadow-sm">
+//                         <h4 className="font-semibold text-lg text-gray-700 mb-3">ID Proof Front</h4>
+//                         {idProofFrontPreview ? (
+//                             <img src={idProofFrontPreview} alt="ID Front" className="w-48 h-32 object-contain mb-3 border-2 border-purple-400 rounded-md" />
+//                         ) : (
+//                             <div className="w-48 h-32 flex items-center justify-center bg-gray-100 text-gray-400 mb-3 rounded-md">
+//                                 <IdentificationIcon className="w-12 h-12" />
+//                             </div>
+//                         )}
+//                         <div className="flex gap-2">
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setActiveWebcam('front')}
+//                                 className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition"
+//                             >
+//                                 Use Webcam
+//                             </button>
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setIdProofFrontPreview(null)}
+//                                 className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition"
+//                                 disabled={!idProofFrontPreview}
+//                             >
+//                                 Clear
+//                             </button>
+//                         </div>
+//                     </div>
+
+//                     {/* ID Proof Back */}
+//                     <div className="flex flex-col items-center p-4 border border-gray-200 rounded-lg shadow-sm">
+//                         <h4 className="font-semibold text-lg text-gray-700 mb-3">ID Proof Back</h4>
+//                         {idProofBackPreview ? (
+//                             <img src={idProofBackPreview} alt="ID Back" className="w-48 h-32 object-contain mb-3 border-2 border-purple-400 rounded-md" />
+//                         ) : (
+//                             <div className="w-48 h-32 flex items-center justify-center bg-gray-100 text-gray-400 mb-3 rounded-md">
+//                                 <IdentificationIcon className="w-12 h-12" />
+//                             </div>
+//                         )}
+//                         <div className="flex gap-2">
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setActiveWebcam('back')}
+//                                 className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition"
+//                             >
+//                                 Use Webcam
+//                             </button>
+//                             <button
+//                                 type="button"
+//                                 onClick={() => setIdProofBackPreview(null)}
+//                                 className="bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition"
+//                                 disabled={!idProofBackPreview}
+//                             >
+//                                 Clear
+//                             </button>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Action Buttons */}
+//                 <div className="flex justify-end gap-4 mt-6">
+//                     <button
+//                         type="button"
+//                         onClick={onClose}
+//                         className="bg-gray-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-gray-600 transition shadow-md text-base"
+//                     >
+//                         Close
+//                     </button>
+//                     <button
+//                         type="button"
+//                         onClick={handleUploadButtonClick}
+//                         className="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md text-base"
+//                     >
+//                         Upload Photos
+//                     </button>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// // --- EditBookingForm Component ---
+// const EditBookingForm = () => {
+//     const { id } = useParams();
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const editingData = location.state?.editingData;
+
+//     const [formData, setFormData] = useState(editingData || null);
+//     const [showPhotoIdUpload, setShowPhotoIdUpload] = useState(false);
+
+//     // New states for storing captured image URLs/base64 strings
+//     const [capturedStudentAvatar, setCapturedStudentAvatar] = useState(null);
+//     const [capturedIdProofFront, setCapturedIdProofFront] = useState(null);
+//     const [capturedIdProofBack, setCapturedIdProofBack] = useState(null);
+
+
+//     useEffect(() => {
+//         if (!editingData) {
+//             console.error("No booking data provided for editing. Navigating back.");
+//             navigate("/booking");
+//         } else {
+//             // If editingData already has image URLs (e.g., from a database),
+//             // initialize the captured image states with them.
+//             // This assumes your backend stores these as URLs. If it stores base64, adjust accordingly.
+//             setCapturedStudentAvatar(editingData.studentAvatar || null);
+//             setCapturedIdProofFront(editingData.idProofFront || null);
+//             setCapturedIdProofBack(editingData.idProofBack || null);
+//         }
+//     }, [editingData, navigate]);
+
+//     const handleChange = (e) => {
+//         const { name, value, type, checked } = e.target;
+//         setFormData((prev) => ({
+//             ...prev,
+//             [name]: type === "checkbox" ? checked : value,
+//         }));
+//     };
+
+//     // Handler to receive image data from PhotoIdUpload modal
+//     const handleSaveCapturedImages = ({ studentAvatar, idProofFront, idProofBack }) => {
+//         setCapturedStudentAvatar(studentAvatar);
+//         setCapturedIdProofFront(idProofFront);
+//         setCapturedIdProofBack(idProofBack);
+
+//         // Optionally, update formData with these base64 strings if you intend to save them to your backend
+//         setFormData((prev) => ({
+//             ...prev,
+//             studentAvatar: studentAvatar, // Save base64 string
+//             idProofFront: idProofFront,   // Save base64 string
+//             idProofBack: idProofBack,     // Save base64 string
+//         }));
+//     };
+
+
+//     const handleSubmit = async (e) => {
+//         e.preventDefault();
+//         try {
+//             // When submitting, include the captured image data in the formData
+//             const dataToSubmit = {
+//                 ...formData,
+//                 studentAvatar: capturedStudentAvatar,
+//                 idProofFront: capturedIdProofFront,
+//                 idProofBack: capturedIdProofBack,
+//             };
+
+//             await axios.put(
+//                 `https://havana-backend.vercel.app/api/bookings/${formData._id}`,
+//                 dataToSubmit // Use dataToSubmit which includes image data
+//             );
+//             toast.success("Booking updated successfully!");
+//             navigate("/booking");
+//         } catch (error) {
+//             console.error("Update failed", error);
+//             toast.error("Failed to update booking.");
+//         }
+//     };
+
+//     // Styling classes for consistent look and responsiveness
+//     const sectionTitleClass = "text-xl font-semibold text-gray-700 mb-3 border-b pb-2 border-gray-300 flex items-center gap-2";
+//     const inputContainerClass = ""; // Will use gap on inner grid instead of mb
+//     const inputClass = "w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500";
+//     const checkboxLabelClass = "flex items-center gap-2 text-gray-700 font-medium";
+//     const iconClass = "h-5 w-5 text-gray-500";
+//     const labelClass = "block text-gray-700 text-sm font-bold mb-1"; // Reduced mb-2 to mb-1
+
+//     if (!formData) return <div className="p-4 text-center text-lg font-medium text-gray-600">Loading booking details...</div>;
+
+//     return (
+//         <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl font-sans">
+//             <Toaster /> {/* For displaying toast notifications */}
+//             <h2 className="text-4xl font-bold text-center text-gray-900 mb-8 tracking-wide">Edit Booking</h2>
+//             <form onSubmit={handleSubmit} className="space-y-6"> {/* Main vertical spacing */}
+
+//                 {/* Booking Details and Guest Information (Paired in two columns) */}
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+//                     {/* Booking Details */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><DocumentTextIcon className={iconClass} />Booking Details</h3>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="grcNo" className={labelClass}>GRC No.</label>
+//                                 <input type="text" name="grcNo" id="grcNo" value={formData.grcNo} placeholder="GRC No" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="checkInDate" className={labelClass}>Check-in Date</label>
+//                                 <input type="date" name="checkInDate" id="checkInDate" value={formData.checkInDate} onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="checkOutDate" className={labelClass}>Check-out Date</label>
+//                                 <input type="date" name="checkOutDate" id="checkOutDate" value={formData.checkOutDate} onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="days" className={labelClass}>Days</label>
+//                                 <input type="number" name="days" id="days" value={formData.days} placeholder="Days" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="timeIn" className={labelClass}>Time In</label>
+//                                 <input type="text" name="timeIn" id="timeIn" value={formData.timeIn} placeholder="Time In" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="timeOut" className={labelClass}>Time Out</label>
+//                                 <input type="text" name="timeOut" id="timeOut" value={formData.timeOut} placeholder="Time Out" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     {/* Personal Info */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><UserIcon className={iconClass} />Guest Information</h3>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="salutation" className={labelClass}>Salutation</label>
+//                                 <input type="text" name="salutation" id="salutation" value={formData.salutation} placeholder="Salutation" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="name" className={labelClass}>Full Name</label>
+//                                 <input type="text" name="name" id="name" value={formData.name} placeholder="Full Name" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="age" className={labelClass}>Age</label>
+//                                 <input type="number" name="age" id="age" value={formData.age} placeholder="Age" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="gender" className={labelClass}>Gender</label>
+//                                 <select name="gender" id="gender" value={formData.gender} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>Male</option>
+//                                     <option>Female</option>
+//                                     <option>Other</option>
+//                                 </select>
+//                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-1"}>
+//                                 <label htmlFor="address" className={labelClass}>Address</label>
+//                                 <input type="text" name="address" id="address" value={formData.address} placeholder="Address" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="city" className={labelClass}>City</label>
+//                                 <input type="text" name="city" id="city" value={formData.city} placeholder="City" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="nationality" className={labelClass}>Nationality</label>
+//                                 <input type="text" name="nationality" id="nationality" value={formData.nationality} readOnly className={inputClass + " bg-gray-100 cursor-not-allowed"} />
+//                                 <GlobeAltIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="mobileNo" className={labelClass}>Mobile No.</label>
+//                                 <input type="text" name="mobileNo" id="mobileNo" value={formData.mobileNo} placeholder="Mobile No." onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="email" className={labelClass}>Email</label>
+//                                 <input type="email" name="email" id="email" value={formData.email} placeholder="Email" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="phoneNo" className={labelClass}>Phone No.</label>
+//                                 <input type="text" name="phoneNo" id="phoneNo" value={formData.phoneNo} placeholder="Phone No." onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="birthDate" className={labelClass}>Birth Date</label>
+//                                 <input type="date" name="birthDate" id="birthDate" value={formData.birthDate} onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="anniversary" className={labelClass}>Anniversary</label>
+//                                 <input type="date" name="anniversary" id="anniversary" value={formData.anniversary} onChange={handleChange} className={inputClass} />
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Company & ID Info (Paired in two columns) */}
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+//                     {/* Company Details */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><BuildingOfficeIcon className={iconClass} />Company Details</h3>
+//                         <div className="grid grid-cols-1 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="companyName" className={labelClass}>Company Name</label>
+//                                 <input type="text" name="companyName" id="companyName" value={formData.companyName} placeholder="Company Name" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="companyGSTIN" className={labelClass}>Company GSTIN</label>
+//                                 <input type="text" name="companyGSTIN" id="companyGSTIN" value={formData.companyGSTIN} placeholder="Company GSTIN" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     {/* ID Proof */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><IdentificationIcon className={iconClass} />ID Proof</h3>
+//                         <div className="grid grid-cols-1 gap-4">
+//                             <div className="relative">
+//                                 <label htmlFor="idProofType" className={labelClass}>ID Proof Type</label>
+//                                 <select name="idProofType" id="idProofType" value={formData.idProofType} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>Aadhaar Card</option>
+//                                     <option>PAN Card</option>
+//                                     <option>Driving License</option>
+//                                     <option>Passport</option>
+//                                 </select>
+//                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="idProofNumber" className={labelClass}>ID Number</label>
+//                                 <input type="text" name="idProofNumber" id="idProofNumber" value={formData.idProofNumber} placeholder="ID Number" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             {/* Display Captured Images */}
+//                             <div className="col-span-full mt-4 flex justify-around items-end">
+//                                 <div className="flex flex-col items-center">
+//                                     <span className="text-gray-600 text-sm font-medium mb-1">Guest Photo</span>
+//                                     {capturedStudentAvatar ? (
+//                                         <img src={capturedStudentAvatar} alt="Guest Avatar" className="w-24 h-24 object-cover rounded-full border border-blue-300" />
+//                                     ) : (
+//                                         <div className="w-24 h-24 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 border border-gray-300">
+//                                             <UserIcon className="w-8 h-8" />
+//                                         </div>
+//                                     )}
+//                                 </div>
+//                                 <div className="flex flex-col items-center">
+//                                     <span className="text-gray-600 text-sm font-medium mb-1">ID Front</span>
+//                                     {capturedIdProofFront ? (
+//                                         <img src={capturedIdProofFront} alt="ID Front" className="w-32 h-20 object-contain border border-purple-300 rounded-md" />
+//                                     ) : (
+//                                         <div className="w-32 h-20 flex items-center justify-center bg-gray-100 text-gray-400 border border-gray-300 rounded-md">
+//                                             <IdentificationIcon className="w-8 h-8" />
+//                                         </div>
+//                                     )}
+//                                 </div>
+//                                 <div className="flex flex-col items-center">
+//                                     <span className="text-gray-600 text-sm font-medium mb-1">ID Back</span>
+//                                     {capturedIdProofBack ? (
+//                                         <img src={capturedIdProofBack} alt="ID Back" className="w-32 h-20 object-contain border border-purple-300 rounded-md" />
+//                                     ) : (
+//                                         <div className="w-32 h-20 flex items-center justify-center bg-gray-100 text-gray-400 border border-gray-300 rounded-md">
+//                                             <IdentificationIcon className="w-8 h-8" />
+//                                         </div>
+//                                     )}
+//                                 </div>
+//                             </div>
+//                             <div className="col-span-full flex justify-center mt-4">
+//                                 <button
+//                                     type="button"
+//                                     onClick={() => setShowPhotoIdUpload(true)}
+//                                     className="bg-purple-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-purple-700 transition transform hover:scale-105 shadow-md text-sm flex items-center gap-2"
+//                                 >
+//                                     <CameraIcon className="h-5 w-5" /> Capture/Upload Photos
+//                                 </button>
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Room & Rate Details and Travel & Purpose (Paired in two columns) */}
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+//                     {/* Room & Rate Details */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><HomeIcon className={iconClass} />Room & Rate Details</h3>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="roomNo" className={labelClass}>Room No.</label>
+//                                 <input type="text" name="roomNo" id="roomNo" value={formData.roomNo} placeholder="Room No." onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="planPackage" className={labelClass}>Plan Package</label>
+//                                 <input type="text" name="planPackage" id="planPackage" value={formData.planPackage} placeholder="Plan Package" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="noOfAdults" className={labelClass}>No. of Adults</label>
+//                                 <input type="number" name="noOfAdults" id="noOfAdults" value={formData.noOfAdults} placeholder="No. of Adults" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="noOfChildren" className={labelClass}>No. of Children</label>
+//                                 <input type="number" name="noOfChildren" id="noOfChildren" value={formData.noOfChildren} placeholder="No. of Children" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="rate" className={labelClass}>Rate</label>
+//                                 <input type="number" name="rate" id="rate" value={formData.rate} placeholder="Rate" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass + " sm:col-span-2 flex flex-wrap gap-x-6 gap-y-2 mt-2"}>
+//                                 <label htmlFor="taxIncluded" className={checkboxLabelClass}>
+//                                     <input type="checkbox" name="taxIncluded" id="taxIncluded" checked={formData.taxIncluded} onChange={handleChange} className="mr-1" />
+//                                     Tax Included
+//                                 </label>
+//                                 <label htmlFor="serviceCharge" className={checkboxLabelClass}>
+//                                     <input type="checkbox" name="serviceCharge" id="serviceCharge" checked={formData.serviceCharge} onChange={handleChange} className="mr-1" />
+//                                     Service Charge
+//                                 </label>
+//                                 <label htmlFor="isLeader" className={checkboxLabelClass}>
+//                                     <input type="checkbox" name="isLeader" id="isLeader" checked={formData.isLeader} onChange={handleChange} className="mr-1" />
+//                                     Is Leader
+//                                 </label>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     {/* Travel & Purpose */}
+//                     <div>
+//                         <h3 className={sectionTitleClass}><WalletIcon className={iconClass} />Travel & Purpose</h3>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="arrivedFrom" className={labelClass}>Arrived From</label>
+//                                 <input type="text" name="arrivedFrom" id="arrivedFrom" value={formData.arrivedFrom} placeholder="Arrived From" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="destination" className={labelClass}>Destination</label>
+//                                 <input type="text" name="destination" id="destination" value={formData.destination} placeholder="Destination" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="remark" className={labelClass}>Remark</label>
+//                                 <input type="text" name="remark" id="remark" value={formData.remark} placeholder="Remark" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="businessSource" className={labelClass}>Business Source</label>
+//                                 <input type="text" name="businessSource" id="businessSource" value={formData.businessSource} placeholder="Business Source" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="marketSegment" className={labelClass}>Market Segment</label>
+//                                 <input type="text" name="marketSegment" id="marketSegment" value={formData.marketSegment} placeholder="Market Segment" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="purposeOfVisit" className={labelClass}>Purpose of Visit</label>
+//                                 <input type="text" name="purposeOfVisit" id="purposeOfVisit" value={formData.purposeOfVisit} placeholder="Purpose of Visit" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Payment & Discount (Full width section for better layout of many fields) */}
+//                 <div className="grid grid-cols-1 gap-y-4">
+//                     <div>
+//                         <h3 className={sectionTitleClass}><BanknotesIcon className={iconClass} />Payment & Miscellaneous</h3>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="discountPercent" className={labelClass}>Discount (%)</label>
+//                                 <input type="number" name="discountPercent" id="discountPercent" value={formData.discountPercent} placeholder="Discount (%)" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="discountRoomSource" className={labelClass}>Discount Room Source</label>
+//                                 <input type="number" name="discountRoomSource" id="discountRoomSource" value={formData.discountRoomSource} placeholder="Discount Room Source" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="paymentMode" className={labelClass}>Payment Mode</label>
+//                                 <select name="paymentMode" id="paymentMode" value={formData.paymentMode} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>Cash</option>
+//                                     <option>Card</option>
+//                                     <option>UPI</option>
+//                                     <option>Bank Transfer</option>
+//                                 </select>
+//                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="paymentStatus" className={labelClass}>Payment Status</label>
+//                                 <select name="paymentStatus" id="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>Pending</option>
+//                                     <option>Paid</option>
+//                                     <option>Partial</option>
+//                                     <option>Failed</option>
+//                                 </select>
+//                                 <CheckBadgeIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="bookingRefNo" className={labelClass}>Booking Ref No.</label>
+//                                 <input type="text" name="bookingRefNo" id="bookingRefNo" value={formData.bookingRefNo} placeholder="Booking Ref No." onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="mgmtBlock" className={labelClass}>Management Block</label>
+//                                 <select name="mgmtBlock" id="mgmtBlock" value={formData.mgmtBlock} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>No</option>
+//                                     <option>Yes</option>
+//                                 </select>
+//                                 <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2"}>
+//                                 <label htmlFor="billingInstruction" className={labelClass}>Billing Instruction</label>
+//                                 <input type="text" name="billingInstruction" id="billingInstruction" value={formData.billingInstruction} placeholder="Billing Instruction" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass}>
+//                                 <label htmlFor="temperature" className={labelClass}>Temperature (°C)</label>
+//                                 <input type="number" name="temperature" id="temperature" value={formData.temperature} placeholder="Temperature" onChange={handleChange} className={inputClass} />
+//                             </div>
+//                             <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2 flex flex-wrap gap-x-6 gap-y-2"}>
+
+//                                 <label htmlFor="vip" className={checkboxLabelClass}>
+//                                     <input type="checkbox" name="vip" id="vip" checked={formData.vip} onChange={handleChange} className="mr-1" />
+//                                     VIP
+//                                 </label>
+//                             </div>
+//                             <div className="relative">
+//                                 <label htmlFor="status" className={labelClass}>Status</label>
+//                                 <select name="status" id="status" value={formData.status} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+//                                     <option>Booked</option>
+//                                     <option>Checked In</option>
+//                                     <option>Checked Out</option>
+//                                     <option>Cancelled</option>
+//                                 </select>
+//                                 <CheckBadgeIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Action Buttons */}
+//                 <div className="col-span-full flex justify-center mt-6 gap-4">
+//                     <button
+//                         type="submit"
+//                         className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
+//                     >
+//                         Update Booking
+//                     </button>
+//                     <button
+//                         type="button"
+//                         onClick={() => navigate("/booking")}
+//                         className="bg-gray-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
+//                     >
+//                         Cancel
+//                     </button>
+//                 </div>
+//             </form>
+
+//             {showPhotoIdUpload && (
+//                 <PhotoIdUpload
+//                     onClose={() => setShowPhotoIdUpload(false)}
+//                     onSaveImages={handleSaveCapturedImages}
+//                     currentFiles={{ // Pass existing captured images to the modal
+//                         studentAvatar: capturedStudentAvatar,
+//                         idProofFront: capturedIdProofFront,
+//                         idProofBack: capturedIdProofBack,
+//                     }}
+//                 />
+//             )}
+//         </div>
+//     );
+// };
+
+// export default EditBookingForm;
+
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
+import Webcam from 'react-webcam';
+
+// Import Heroicons
 import {
-    CalendarIcon,
-    ClockIcon,
     UserIcon,
     BuildingOfficeIcon,
     IdentificationIcon,
-    WalletIcon,
     HomeIcon,
-    ChevronDownIcon, // For selects
-    GlobeAltIcon, // For nationality
-    PhoneIcon,
-    EnvelopeIcon,
-    CakeIcon, // For birthday
-    SparklesIcon, // For anniversary
-    CurrencyRupeeIcon, // For rate
-    CheckBadgeIcon, // For status
-    DocumentTextIcon, // For GRC No, Booking Ref No
-    MapPinIcon, // For City, Arrived From, Destination
-    ChartBarIcon, // For Market Segment
-    BriefcaseIcon, // For Business Source
-    QuestionMarkCircleIcon, // For Purpose of Visit
-    TagIcon, // For Discount
-    BanknotesIcon, // For Payment Mode/Status
-    BuildingStorefrontIcon, // For Company GSTIN
-    MegaphoneIcon, // For Billing Instruction
-    SunIcon, // For Temperature
-    ComputerDesktopIcon, // For EPABX
-    StarIcon // For VIP
+    ChevronDownIcon,
+    GlobeAltIcon,
+    DocumentTextIcon, // Used for PDF icon
+    TagIcon,
+    BriefcaseIcon,
+    BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 
-const EditBookingForm = () => {
-    const { id } = useParams();
-    const location = useLocation();
-    const navigate = useNavigate();
-    const editingData = location.state?.editingData;
+// --- PhotoIdUpload Component (Modal) ---
+const PhotoIdUpload = ({ onClose, currentFiles }) => {
+    // Initialize states with currentFiles passed from parent, or null if not provided
+    const [studentAvatar, setStudentAvatar] = useState(currentFiles?.studentAvatar || null);
+    const [idProofFront, setIdProofFront] = useState(currentFiles?.idProofFront || null);
+    const [idProofBack, setIdProofBack] = useState(currentFiles?.idProofBack || null);
 
-    const [formData, setFormData] = useState(editingData || null);
+    // State to track which webcam is active for capture
+    const [activeWebcam, setActiveWebcam] = useState(null); // Can be 'student', 'front', 'back'
+
+    const webcamRef = useRef(null);
+
+    // Helper function to convert data URL to File object
+    const dataURLtoFile = (dataurl, filename) => {
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    };
+
+    // Handler for file input changes
+    const handleImageUpload = (e, setImageState) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageState(file); // Set the file object to the state
+            // If a file is manually uploaded, turn off any active webcam
+            setActiveWebcam(null);
+            toast.success("File selected successfully!");
+        } else {
+            console.error("No file selected.");
+            toast.error("No file selected.");
+        }
+    };
+
+    // Handler for capturing image from webcam
+    // It now takes a function to set the specific image state and a descriptive name
+    const captureImage = useCallback((setImageState, docType) => {
+        if (webcamRef.current) {
+            const imageSrc = webcamRef.current.getScreenshot();
+            if (imageSrc) {
+                // Convert the base64 image from webcam to a File object
+                const capturedFile = dataURLtoFile(imageSrc, `${docType.toLowerCase().replace(/\s/g, '_')}.png`);
+                setImageState(capturedFile); // Set the captured image (File object) to the specific state
+                setActiveWebcam(null); // Hide webcam after successful capture
+                toast.success(`${docType} captured successfully!`);
+            } else {
+                toast.error(`Failed to capture image for ${docType}.`);
+            }
+        }
+    }, []); // Dependencies are stable, so empty array
+
+    // Helper function to render image previews for each section
+    const renderImagePreview = (imageFile, setImageState) => {
+        // If an imageFile exists (i.e., a file has been selected or captured)
+        if (imageFile) {
+            const isPdf = imageFile.type === "application/pdf"; // Check if the file is a PDF
+
+            return (
+                <div className="relative mt-4 w-48 h-48 rounded-lg overflow-hidden border-4 border-purple-400 shadow-md flex items-center justify-center bg-gray-200">
+                    {isPdf ? (
+                        // If the file is a PDF, show a PDF icon and its name
+                        <div className="text-gray-600 text-center text-sm p-2">
+                            <DocumentTextIcon className="h-10 w-10 mx-auto mb-2 text-gray-500" />
+                            PDF File: <br /> {imageFile.name}
+                        </div>
+                    ) : (
+                        // **If the file is an image (not a PDF), display the image preview**
+                        <img
+                            src={URL.createObjectURL(imageFile)} // This creates a temporary URL for the image file to display it
+                            alt="Preview"
+                            className="object-cover w-full h-full"
+                        />
+                    )}
+                    {/* Button to remove/clear the currently displayed image/document */}
+                    <button
+                        onClick={() => setImageState(null)} // Allows removing the uploaded/captured image
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg hover:bg-red-600 transition-colors"
+                        aria-label="Remove image"
+                    >
+                        X
+                    </button>
+                </div>
+            );
+        }
+        // If no imageFile exists (no file selected/captured yet), show "No image uploaded" text
+        return (
+            <div className="mt-4 w-48 h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-center p-4">
+                No image uploaded
+            </div>
+        );
+    };
+
+    return (
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl font-inter relative">
+            <button
+                // On close, pass back all three image files (even if null)
+                onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors"
+                aria-label="Close photo upload"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Photo & ID Upload</h2>
+
+            {/* Grid for upload sections */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Section 1: Student Avatar Upload */}
+                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+                    <label className="text-lg font-semibold text-gray-700 mb-3">Student Photo</label>
+                    <input
+                        type="file"
+                        accept="image/*" // Only allows image files here
+                        onChange={(e) => setStudentAvatar(e.target.files[0])} // Corrected to use setter directly
+                        className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-purple-50 file:text-purple-700
+                            hover:file:bg-purple-100 cursor-pointer"
+                    />
+                    {renderImagePreview(studentAvatar, setStudentAvatar)}
+                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setActiveWebcam(activeWebcam === 'student' ? null : 'student')}
+                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                        >
+                            {activeWebcam === 'student' ? 'Hide Camera' : 'Show Camera'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => captureImage(setStudentAvatar, 'Student Photo')}
+                            disabled={activeWebcam !== 'student'} // Enable capture only if 'student' webcam is active
+                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                                activeWebcam === 'student' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                        >
+                            Capture
+                        </button>
+                    </div>
+                </div>
+
+                {/* Section 2: ID Proof Front Upload */}
+                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+                    <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Front)</label>
+                    <input
+                        type="file"
+                        accept="image/*,application/pdf" // Allows both images and PDFs
+                        onChange={(e) => setIdProofFront(e.target.files[0])} // Corrected to use setter directly
+                        className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100 cursor-pointer"
+                    />
+                    {renderImagePreview(idProofFront, setIdProofFront)}
+                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setActiveWebcam(activeWebcam === 'front' ? null : 'front')}
+                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                        >
+                            {activeWebcam === 'front' ? 'Hide Camera' : 'Show Camera'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => captureImage(setIdProofFront, 'ID Proof Front')}
+                            disabled={activeWebcam !== 'front'} // Enable capture only if 'front' webcam is active
+                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                                activeWebcam === 'front' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                        >
+                            Capture
+                        </button>
+                    </div>
+                </div>
+
+                {/* Section 3: ID Proof Back Upload */}
+                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+                    <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Back)</label>
+                    <input
+                        type="file"
+                        accept="image/*,application/pdf" // Allows both images and PDFs
+                        onChange={(e) => setIdProofBack(e.target.files[0])} // Corrected to use setter directly
+                        className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-green-50 file:text-green-700
+                            hover:file:bg-green-100 cursor-pointer"
+                    />
+                    {renderImagePreview(idProofBack, setIdProofBack)}
+                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setActiveWebcam(activeWebcam === 'back' ? null : 'back')}
+                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                        >
+                            {activeWebcam === 'back' ? 'Hide Camera' : 'Show Camera'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => captureImage(setIdProofBack, 'ID Proof Back')}
+                            disabled={activeWebcam !== 'back'} // Enable capture only if 'back' webcam is active
+                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                                activeWebcam === 'back' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                        >
+                            Capture
+                        </button>
+                    </div>
+                </div>
+
+                {/* Dedicated Webcam Display (conditionally rendered below the sections for better visibility) */}
+                {activeWebcam && (
+                    <div className="md:col-span-2 lg:col-span-3 flex justify-center mt-4">
+                        <div className="relative w-full max-w-sm mx-auto rounded-lg overflow-hidden shadow-md border-2 border-indigo-400">
+                            <Webcam
+                                audio={false}
+                                ref={webcamRef}
+                                screenshotFormat="image/png"
+                                className="w-full h-auto"
+                                videoConstraints={{ facingMode: "user" }} // Use front camera
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-center space-x-4">
+                <button
+                    type="button"
+                    // On "Done", pass back the latest state of all three files
+                    onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+                    className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75"
+                >
+                    Done
+                </button>
+            </div>
+        </div>
+    );
+};
+
+
+const AddBookingForm = () => {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        grcNo: "",
+        checkInDate: "",
+        checkOutDate: "",
+        days: "",
+        timeIn: "",
+        timeOut: "",
+        salutation: "",
+        name: "",
+        age: "",
+        gender: "Male",
+        address: "",
+        city: "",
+        nationality: "Indian",
+        mobileNo: "",
+        email: "",
+        phoneNo: "",
+        birthDate: "",
+        anniversary: "",
+        companyName: "",
+        companyGSTIN: "",
+        idProofType: "Aadhaar Card",
+        idProofNumber: "",
+        roomNo: "",
+        planPackage: "",
+        noOfAdults: "",
+        noOfChildren: "",
+        rate: "",
+        taxIncluded: false,
+        serviceCharge: false,
+        isLeader: false,
+        arrivedFrom: "",
+        destination: "",
+        remark: "",
+        businessSource: "",
+        marketSegment: "",
+        purposeOfVisit: "Personal",
+        discountPercent: "",
+        discountRoomSource: "",
+        paymentMode: "Cash",
+        paymentStatus: "Pending",
+        bookingRefNo: "",
+        mgmtBlock: "No",
+        billingInstruction: "",
+        temperature: "",
+        fromCSV: false,
+        epabx: false,
+        vip: false,
+        status: "Pending", // Default status for new bookings
+    });
+
+    const [marketSegmentOptions, setMarketSegmentOptions] = useState([]);
+    const [showMarketSegmentInput, setShowMarketSegmentInput] = useState(false);
+    const [showPhotoIdModal, setShowPhotoIdModal] = useState(false);
+
+    // State for multiple files - these will now hold the actual File objects
+    const [uploadedFiles, setUploadedFiles] = useState({
+        studentAvatar: null,
+        idProofFront: null,
+        idProofBack: null,
+        otherDocument: null, // Assuming you might have an "otherDocument" input somewhere too
+    });
 
     useEffect(() => {
-        if (!editingData) {
-            // Using a custom modal/message box instead of alert()
-            // For this example, we'll just log and navigate.
-            // In a real app, you'd render a modal component.
-            console.error("No booking data provided for editing. Navigating back.");
-            navigate("/booking");
+        let options = [];
+        let showInput = false;
+
+        switch (formData.businessSource) {
+            case "Online OTA":
+                options = ["MakeMyTrip", "Goibibo", "Booking.com", "Agoda", "Expedia", "Others (Specify)"];
+                break;
+            case "Travel Agent":
+                options = ["Corporate Travel Agency", "Leisure Travel Agency", "Tour Operator", "Local Agent", "Others (Specify)"];
+                break;
+            case "Self Agent":
+                options = ["Company Website", "Mobile App", "Walk-in Online Booking"];
+                break;
+            case "Corporate":
+                options = ["Direct Corporate Booking", "Through Company Portal"];
+                break;
+            case "Walk-in":
+            case "Direct Call":
+            case "Referral":
+            case "":
+                options = [];
+                showInput = false;
+                break;
+            default:
+                options = [];
+                showInput = true;
+                break;
         }
-    }, [editingData, navigate]);
+
+        setMarketSegmentOptions(options);
+        setShowMarketSegmentInput(showInput || (options.includes("Others (Specify)") && formData.marketSegment === "Others (Specify)"));
+
+        if (!options.includes(formData.marketSegment) && !showInput && formData.marketSegment !== "") {
+            setFormData(prev => ({ ...prev, marketSegment: "" }));
+        } else if (showInput && options.includes(formData.marketSegment) && formData.marketSegment !== "Others (Specify)") {
+            setFormData(prev => ({ ...prev, marketSegment: "" }));
+        }
+
+    }, [formData.businessSource, formData.marketSegment]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -64,337 +1458,558 @@ const EditBookingForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(
-                `https://havana-backend.vercel.app/api/bookings/${formData._id}`,
-                formData
-            );
-            // Using a custom modal/message box instead of alert()
-            console.log("Booking updated successfully!"); // Log success
+            if (!formData.checkInDate || !formData.checkOutDate || !formData.name) {
+                toast.error("Please fill in all required fields (Check-in Date, Check-out Date, Full Name).");
+                return;
+            }
+
+            const dataToSubmit = new FormData();
+            for (const key in formData) {
+                dataToSubmit.append(key, formData[key]);
+            }
+            // Append all uploaded files with the correct backend schema keys
+            // These will now be the actual File objects, not URLs.
+            // Your backend must be ready to receive these files in the main booking POST request.
+            if (uploadedFiles.studentAvatar) {
+                dataToSubmit.append("photoUrl", uploadedFiles.studentAvatar); // Changed from studentAvatar to photoUrl
+            }
+            if (uploadedFiles.idProofFront) {
+                dataToSubmit.append("idProofImageUrl2", uploadedFiles.idProofFront); // Changed from idProofFront to idProofImageUrl2
+            }
+            if (uploadedFiles.idProofBack) {
+                dataToSubmit.append("idProofImageUrl", uploadedFiles.idProofBack); // Changed from idProofBack to idProofImageUrl
+            }
+            if (uploadedFiles.otherDocument) {
+                dataToSubmit.append("otherDocument", uploadedFiles.otherDocument);
+            }
+
+            console.log("Submitting form data:", formData);
+            console.log("Submitting uploaded files (renamed for backend, as File objects):", uploadedFiles);
+
+
+            const response = await axios.post("https://havana-backend.vercel.app/api/bookings", dataToSubmit, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            toast.success("Booking Created Successfully!");
+            console.log("New booking created:", response.data);
+
             navigate("/booking");
         } catch (error) {
-            console.error("Update failed", error);
-            // Using a custom modal/message box instead of alert()
-            console.error("Failed to update booking."); // Log error
+            console.error("Error creating booking:", error);
+            toast.error("Failed to create booking. Please try again. Error: " + (error.response?.data?.message || error.message));
         }
     };
 
-    // Styling classes for consistent look and responsiveness
-    const sectionTitleClass = "text-xl font-semibold text-gray-700 mb-3 border-b pb-2 border-gray-300 flex items-center gap-2";
-    const inputContainerClass = ""; // Will use gap on inner grid instead of mb
-    const inputClass = "w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500";
-    const checkboxLabelClass = "flex items-center gap-2 text-gray-700 font-medium";
-    const iconClass = "h-5 w-5 text-gray-500";
-    const labelClass = "block text-gray-700 text-sm font-bold mb-1"; // Reduced mb-2 to mb-1
+    const handleOpenPhotoIdModal = () => {
+        setShowPhotoIdModal(true);
+    };
 
-    if (!formData) return <div className="p-4 text-center text-lg font-medium text-gray-600">Loading booking details...</div>;
+    // Update to receive an object of files
+    const handleClosePhotoIdModal = (files) => {
+        setUploadedFiles(files); // This is where the File objects are saved
+        const anyFileSelected = Object.values(files).some(file => file !== null);
+        if (anyFileSelected) {
+            toast.success("Selected photos/documents updated in form data.");
+        } else {
+            toast('No new photo or document selected/captured.', { icon: 'ℹ️' });
+        }
+        setShowPhotoIdModal(false);
+    };
+
+    // This function is unrelated to the image upload removal, keeping it as is if needed for other functionality.
+    const updateBookingStatus = async (bookingId, newStatus) => {
+        try {
+            const response = await axios.patch(
+                `https://havana-backend.vercel.app/api/bookings/${bookingId}/status`,
+                { status: newStatus } // Send the new status in the request body
+            );
+            toast.success(`Booking ${bookingId} status updated to ${newStatus}!`);
+            console.log('Status updated successfully:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating booking status:', error);
+            toast.error(`Failed to update status for booking ${bookingId}. Error: ${error.response?.data?.message || error.message}`);
+            throw error;
+        }
+    };
+
+    // Helper function to render image previews *outside* the modal
+    const renderExternalImagePreview = (file, label) => {
+        if (file) {
+            const isPdf = file.type === "application/pdf";
+            return (
+                <div className="flex flex-col items-center p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm w-40 h-40 overflow-hidden text-center justify-center">
+                    <span className="text-sm font-semibold text-gray-700 mb-1">{label}</span>
+                    {isPdf ? (
+                        <div className="text-gray-600 text-xs mt-1">
+                            <DocumentTextIcon className="h-8 w-8 mx-auto mb-1 text-gray-500" />
+                            {file.name}
+                        </div>
+                    ) : (
+                        <img
+                            src={URL.createObjectURL(file)}
+                            alt={`${label} Preview`}
+                            className="object-cover w-full h-full rounded"
+                        />
+                    )}
+                </div>
+            );
+        }
+        return null; // Don't render anything if no file
+    };
+
+    // Styling classes
+    const sectionTitleClass = "text-xl font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2";
+    const inputGroupClass = "mb-3";
+    const labelClass = "block text-gray-700 text-sm font-semibold mb-1";
+    const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500 text-base";
+    const checkboxLabelClass = "flex items-center gap-2 text-gray-700 font-medium text-sm";
+    const iconClass = "h-5 w-5 text-gray-500";
+
+    const hasAnyUploadedFile = uploadedFiles.studentAvatar || uploadedFiles.idProofFront || uploadedFiles.idProofBack || uploadedFiles.otherDocument;
+
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl font-sans">
-            <h2 className="text-4xl font-bold text-center text-gray-900 mb-8 tracking-wide">Edit Booking</h2>
-            <form onSubmit={handleSubmit} className="space-y-6"> {/* Main vertical spacing */}
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 font-inter">
+            <Toaster position="top-right" reverseOrder={false} />
 
-                {/* Booking Details and Guest Information (Paired in two columns) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+            {/* Main Add Booking Form */}
+            <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl w-full">
+                <h2 className="text-4xl font-extrabold text-center text-gray-900 mb-10 tracking-tight">Edit Booking</h2>
+                <form onSubmit={handleSubmit} className="space-y-8"> {/* space-y-8 separates the major sections */}
+
                     {/* Booking Details */}
                     <div>
                         <h3 className={sectionTitleClass}><DocumentTextIcon className={iconClass} />Booking Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className={inputContainerClass}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="grcNo" className={labelClass}>GRC No.</label>
-                                <input type="text" name="grcNo" id="grcNo" value={formData.grcNo} placeholder="GRC No" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="grcNo" id="grcNo" placeholder="GRC No" value={formData.grcNo} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="checkInDate" className={labelClass}>Check-in Date</label>
-                                <input type="date" name="checkInDate" id="checkInDate" value={formData.checkInDate} onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="checkInDate" className={labelClass}>Check-in Date <span className="text-red-500">*</span></label>
+                                <input type="date" name="checkInDate" id="checkInDate" value={formData.checkInDate} onChange={handleChange} className={inputClass} required />
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="checkOutDate" className={labelClass}>Check-out Date</label>
-                                <input type="date" name="checkOutDate" id="checkOutDate" value={formData.checkOutDate} onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="checkOutDate" className={labelClass}>Check-out Date <span className="text-red-500">*</span></label>
+                                <input type="date" name="checkOutDate" id="checkOutDate" value={formData.checkOutDate} onChange={handleChange} className={inputClass} required />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="days" className={labelClass}>Days</label>
-                                <input type="number" name="days" id="days" value={formData.days} placeholder="Days" onChange={handleChange} className={inputClass} />
+                                <input type="number" name="days" id="days" placeholder="Days" value={formData.days} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="timeIn" className={labelClass}>Time In</label>
-                                <input type="text" name="timeIn" id="timeIn" value={formData.timeIn} placeholder="Time In" onChange={handleChange} className={inputClass} />
+                                <input type="time" name="timeIn" id="timeIn" placeholder="e.g., 14:00" value={formData.timeIn} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="timeOut" className={labelClass}>Time Out</label>
-                                <input type="text" name="timeOut" id="timeOut" value={formData.timeOut} placeholder="Time Out" onChange={handleChange} className={inputClass} />
+                                <input type="time" name="timeOut" id="timeOut" placeholder="e.g., 12:00" value={formData.timeOut} onChange={handleChange} className={inputClass} />
                             </div>
                         </div>
                     </div>
 
-                    {/* Personal Info */}
+                    {/* Guest Information */}
                     <div>
                         <h3 className={sectionTitleClass}><UserIcon className={iconClass} />Guest Information</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="salutation" className={labelClass}>Salutation</label>
-                                <input type="text" name="salutation" id="salutation" value={formData.salutation} placeholder="Salutation" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="salutation" id="salutation" placeholder="Mr./Ms./Dr." value={formData.salutation} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="name" className={labelClass}>Full Name</label>
-                                <input type="text" name="name" id="name" value={formData.name} placeholder="Full Name" onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="name" className={labelClass}>Full Name <span className="text-red-500">*</span></label>
+                                <input type="text" name="name" id="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className={inputClass} required />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="age" className={labelClass}>Age</label>
-                                <input type="number" name="age" id="age" value={formData.age} placeholder="Age" onChange={handleChange} className={inputClass} />
+                                <input type="number" name="age" id="age" placeholder="Age" value={formData.age} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className="relative">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="gender" className={labelClass}>Gender</label>
-                                <select name="gender" id="gender" value={formData.gender} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>Male</option>
-                                    <option>Female</option>
-                                    <option>Other</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <select name="gender" id="gender" value={formData.gender} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className={inputContainerClass + " sm:col-span-2 lg:col-span-1"}>
+                            <div className={inputGroupClass + " sm:col-span-2 lg:col-span-1"}> {/* Adjusted span */}
                                 <label htmlFor="address" className={labelClass}>Address</label>
-                                <input type="text" name="address" id="address" value={formData.address} placeholder="Address" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="address" id="address" placeholder="Address" value={formData.address} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="city" className={labelClass}>City</label>
-                                <input type="text" name="city" id="city" value={formData.city} placeholder="City" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="city" id="city" placeholder="City" value={formData.city} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className="relative">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="nationality" className={labelClass}>Nationality</label>
-                                <input type="text" name="nationality" id="nationality" value={formData.nationality} readOnly className={inputClass + " bg-gray-100 cursor-not-allowed"} />
-                                <GlobeAltIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <input type="text" name="nationality" id="nationality" value={formData.nationality} readOnly className={inputClass + " bg-gray-100 cursor-not-allowed"} />
+                                    {/* You might consider making Nationality a selectable dropdown for common nationalities */}
+                                </div>
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="mobileNo" className={labelClass}>Mobile No.</label>
-                                <input type="text" name="mobileNo" id="mobileNo" value={formData.mobileNo} placeholder="Mobile No." onChange={handleChange} className={inputClass} />
+                                <input type="tel" name="mobileNo" id="mobileNo" placeholder="Mobile No." value={formData.mobileNo} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="email" className={labelClass}>Email</label>
-                                <input type="email" name="email" id="email" value={formData.email} placeholder="Email" onChange={handleChange} className={inputClass} />
+                                <input type="email" name="email" id="email" placeholder="Email" value={formData.email} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="phoneNo" className={labelClass}>Phone No.</label>
-                                <input type="text" name="phoneNo" id="phoneNo" value={formData.phoneNo} placeholder="Phone No." onChange={handleChange} className={inputClass} />
+                                <input type="tel" name="phoneNo" id="phoneNo" placeholder="Phone No." value={formData.phoneNo} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="birthDate" className={labelClass}>Birth Date</label>
                                 <input type="date" name="birthDate" id="birthDate" value={formData.birthDate} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="anniversary" className={labelClass}>Anniversary</label>
                                 <input type="date" name="anniversary" id="anniversary" value={formData.anniversary} onChange={handleChange} className={inputClass} />
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Company & ID Info (Paired in two columns) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                    {/* Company Details */}
+                    {/* Company Details (Conditional) */}
                     <div>
                         <h3 className={sectionTitleClass}><BuildingOfficeIcon className={iconClass} />Company Details</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className={inputContainerClass}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="companyName" className={labelClass}>Company Name</label>
-                                <input type="text" name="companyName" id="companyName" value={formData.companyName} placeholder="Company Name" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="companyName" id="companyName" placeholder="Company Name" value={formData.companyName} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="companyGSTIN" className={labelClass}>Company GSTIN</label>
-                                <input type="text" name="companyGSTIN" id="companyGSTIN" value={formData.companyGSTIN} placeholder="Company GSTIN" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="companyGSTIN" id="companyGSTIN" placeholder="Company GSTIN" value={formData.companyGSTIN} onChange={handleChange} className={inputClass} />
                             </div>
                         </div>
                     </div>
 
-                    {/* ID Proof */}
+                    {/* ID Proof & Documents */}
                     <div>
-                        <h3 className={sectionTitleClass}><IdentificationIcon className={iconClass} />ID Proof</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className="relative">
+                        <h3 className={sectionTitleClass}><IdentificationIcon className={iconClass} />ID Proof & Documents</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="idProofType" className={labelClass}>ID Proof Type</label>
-                                <select name="idProofType" id="idProofType" value={formData.idProofType} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>Aadhaar Card</option>
-                                    <option>PAN Card</option>
-                                    <option>Driving License</option>
-                                    <option>Passport</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <select name="idProofType" id="idProofType" value={formData.idProofType} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Aadhaar Card">Aadhaar Card</option>
+                                        <option value="Passport">Passport</option>
+                                        <option value="Driving License">Driving License</option>
+                                        <option value="Voter ID">Voter ID</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="idProofNumber" className={labelClass}>ID Number</label>
-                                <input type="text" name="idProofNumber" id="idProofNumber" value={formData.idProofNumber} placeholder="ID Number" onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="idProofNumber" className={labelClass}>ID Proof Number</label>
+                                <input type="text" name="idProofNumber" id="idProofNumber" placeholder="ID Proof Number" value={formData.idProofNumber} onChange={handleChange} className={inputClass} />
+                            </div>
+                            <div className={inputGroupClass + " flex items-end"}>
+                                <button
+                                    type="button"
+                                    onClick={handleOpenPhotoIdModal}
+                                    className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                                >
+                                    <IdentificationIcon className="h-5 w-5" /> Upload Photos/IDs
+                                </button>
                             </div>
                         </div>
+                        {/* --- Display Captured/Uploaded Images Here --- */}
+                        <div className="mt-6">
+                            {hasAnyUploadedFile ? (
+                                <div className="flex flex-wrap gap-4 justify-start">
+                                    {renderExternalImagePreview(uploadedFiles.studentAvatar, "Student Photo")}
+                                    {renderExternalImagePreview(uploadedFiles.idProofFront, "ID Front")}
+                                    {renderExternalImagePreview(uploadedFiles.idProofBack, "ID Back")}
+                                    {/* You can add otherDocument here if you implement it */}
+                                </div>
+                            ) : (
+                                <div className="mt-4 p-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-md">
+                                    No photos or ID documents selected yet.
+                                </div>
+                            )}
+                        </div>
+                        {/* --- End Display Area --- */}
                     </div>
-                </div>
 
-                {/* Room & Rate Details and Travel & Purpose (Paired in two columns) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                     {/* Room & Rate Details */}
                     <div>
                         <h3 className={sectionTitleClass}><HomeIcon className={iconClass} />Room & Rate Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className={inputContainerClass}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="roomNo" className={labelClass}>Room No.</label>
-                                <input type="text" name="roomNo" id="roomNo" value={formData.roomNo} placeholder="Room No." onChange={handleChange} className={inputClass} />
+                                <input type="text" name="roomNo" id="roomNo" placeholder="Room No." value={formData.roomNo} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="planPackage" className={labelClass}>Plan Package</label>
-                                <input type="text" name="planPackage" id="planPackage" value={formData.planPackage} placeholder="Plan Package" onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="planPackage" className={labelClass}>Plan/Package</label>
+                                <input type="text" name="planPackage" id="planPackage" placeholder="Plan/Package" value={formData.planPackage} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="noOfAdults" className={labelClass}>No. of Adults</label>
-                                <input type="number" name="noOfAdults" id="noOfAdults" value={formData.noOfAdults} placeholder="No. of Adults" onChange={handleChange} className={inputClass} />
+                                <input type="number" name="noOfAdults" id="noOfAdults" placeholder="Adults" value={formData.noOfAdults} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="noOfChildren" className={labelClass}>No. of Children</label>
-                                <input type="number" name="noOfChildren" id="noOfChildren" value={formData.noOfChildren} placeholder="No. of Children" onChange={handleChange} className={inputClass} />
+                                <input type="number" name="noOfChildren" id="noOfChildren" placeholder="Children" value={formData.noOfChildren} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="rate" className={labelClass}>Rate</label>
-                                <input type="number" name="rate" id="rate" value={formData.rate} placeholder="Rate" onChange={handleChange} className={inputClass} />
+                                <input type="number" name="rate" id="rate" placeholder="Rate" value={formData.rate} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass + " sm:col-span-2 flex flex-wrap gap-x-6 gap-y-2 mt-2"}>
+                            <div className={inputGroupClass + " flex items-end gap-4"}>
                                 <label htmlFor="taxIncluded" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="taxIncluded" id="taxIncluded" checked={formData.taxIncluded} onChange={handleChange} className="mr-1" />
+                                    <input type="checkbox" name="taxIncluded" id="taxIncluded" checked={formData.taxIncluded} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
                                     Tax Included
                                 </label>
                                 <label htmlFor="serviceCharge" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="serviceCharge" id="serviceCharge" checked={formData.serviceCharge} onChange={handleChange} className="mr-1" />
+                                    <input type="checkbox" name="serviceCharge" id="serviceCharge" checked={formData.serviceCharge} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
                                     Service Charge
                                 </label>
+                            </div>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="isLeader" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="isLeader" id="isLeader" checked={formData.isLeader} onChange={handleChange} className="mr-1" />
-                                    Is Leader
+                                    <input type="checkbox" name="isLeader" id="isLeader" checked={formData.isLeader} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
+                                    Is Leader (for group bookings)
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    {/* Travel & Purpose */}
+                    {/* Travel Details */}
                     <div>
-                        <h3 className={sectionTitleClass}><WalletIcon className={iconClass} />Travel & Purpose</h3>
+                        <h3 className={sectionTitleClass}><GlobeAltIcon className={iconClass} />Travel Details</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="arrivedFrom" className={labelClass}>Arrived From</label>
-                                <input type="text" name="arrivedFrom" id="arrivedFrom" value={formData.arrivedFrom} placeholder="Arrived From" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="arrivedFrom" id="arrivedFrom" placeholder="City/Country" value={formData.arrivedFrom} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="destination" className={labelClass}>Destination</label>
-                                <input type="text" name="destination" id="destination" value={formData.destination} placeholder="Destination" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="remark" className={labelClass}>Remark</label>
-                                <input type="text" name="remark" id="remark" value={formData.remark} placeholder="Remark" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="businessSource" className={labelClass}>Business Source</label>
-                                <input type="text" name="businessSource" id="businessSource" value={formData.businessSource} placeholder="Business Source" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="marketSegment" className={labelClass}>Market Segment</label>
-                                <input type="text" name="marketSegment" id="marketSegment" value={formData.marketSegment} placeholder="Market Segment" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="purposeOfVisit" className={labelClass}>Purpose of Visit</label>
-                                <input type="text" name="purposeOfVisit" id="purposeOfVisit" value={formData.purposeOfVisit} placeholder="Purpose of Visit" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="destination" id="destination" placeholder="City/Country" value={formData.destination} onChange={handleChange} className={inputClass} />
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Payment & Discount (Full width section for better layout of many fields) */}
-                <div className="grid grid-cols-1 gap-y-4">
+                    {/* Additional Information */}
                     <div>
-                        <h3 className={sectionTitleClass}><BanknotesIcon className={iconClass} />Payment & Miscellaneous</h3>
+                        <h3 className={sectionTitleClass}><TagIcon className={iconClass} />Additional Information</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputContainerClass}>
-                                <label htmlFor="discountPercent" className={labelClass}>Discount (%)</label>
-                                <input type="number" name="discountPercent" id="discountPercent" value={formData.discountPercent} placeholder="Discount (%)" onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="remark" className={labelClass}>Remark</label>
+                                <textarea name="remark" id="remark" placeholder="Any special requests or notes" value={formData.remark} onChange={handleChange} className={inputClass + " h-20 resize-y"}></textarea>
                             </div>
-                            <div className={inputContainerClass}>
+                            <div className={inputGroupClass}>
+                                <label htmlFor="businessSource" className={labelClass}>Business Source</label>
+                                <div className="relative">
+                                    <select name="businessSource" id="businessSource" value={formData.businessSource} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="">Select Source</option>
+                                        <option value="Online OTA">Online OTA</option>
+                                        <option value="Travel Agent">Travel Agent</option>
+                                        <option value="Self Agent">Self Agent</option>
+                                        <option value="Corporate">Corporate</option>
+                                        <option value="Walk-in">Walk-in</option>
+                                        <option value="Direct Call">Direct Call</option>
+                                        <option value="Referral">Referral</option>
+                                        <option value="Other">Other (Specify)</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className={inputGroupClass}>
+                                <label htmlFor="marketSegment" className={labelClass}>Market Segment</label>
+                                <div className="relative">
+                                    {showMarketSegmentInput ? (
+                                        <input
+                                            type="text"
+                                            name="marketSegment"
+                                            id="marketSegment"
+                                            placeholder="Specify Market Segment"
+                                            value={formData.marketSegment}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        />
+                                    ) : (
+                                        <select
+                                            name="marketSegment"
+                                            id="marketSegment"
+                                            value={formData.marketSegment}
+                                            onChange={handleChange}
+                                            className={inputClass + " appearance-none pr-8"}
+                                            disabled={marketSegmentOptions.length === 0}
+                                        >
+                                            <option value="">Select Segment</option>
+                                            {marketSegmentOptions.map(option => (
+                                                <option key={option} value={option}>{option}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    {!showMarketSegmentInput && <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />}
+                                </div>
+                            </div>
+                            <div className={inputGroupClass}>
+                                <label htmlFor="purposeOfVisit" className={labelClass}>Purpose of Visit</label>
+                                <div className="relative">
+                                    <select name="purposeOfVisit" id="purposeOfVisit" value={formData.purposeOfVisit} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Personal">Personal</option>
+                                        <option value="Business">Business</option>
+                                        <option value="Leisure">Leisure</option>
+                                        <option value="Conference">Conference</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className={inputGroupClass}>
+                                <label htmlFor="discountPercent" className={labelClass}>Discount %</label>
+                                <input type="number" name="discountPercent" id="discountPercent" placeholder="e.g., 10" value={formData.discountPercent} onChange={handleChange} className={inputClass} />
+                            </div>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="discountRoomSource" className={labelClass}>Discount Room Source</label>
-                                <input type="number" name="discountRoomSource" id="discountRoomSource" value={formData.discountRoomSource} placeholder="Discount Room Source" onChange={handleChange} className={inputClass} />
+                                <input type="text" name="discountRoomSource" id="discountRoomSource" placeholder="e.g., Corporate Deal" value={formData.discountRoomSource} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className="relative">
+                        </div>
+                    </div>
+
+                    {/* Payment Details */}
+                    <div>
+                        <h3 className={sectionTitleClass}><BanknotesIcon className={iconClass} />Payment Details</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="paymentMode" className={labelClass}>Payment Mode</label>
-                                <select name="paymentMode" id="paymentMode" value={formData.paymentMode} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>Cash</option>
-                                    <option>Card</option>
-                                    <option>UPI</option>
-                                    <option>Bank Transfer</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <select name="paymentMode" id="paymentMode" value={formData.paymentMode} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Card">Card</option>
+                                        <option value="Online">Online</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className="relative">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="paymentStatus" className={labelClass}>Payment Status</label>
-                                <select name="paymentStatus" id="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>Pending</option>
-                                    <option>Paid</option>
-                                    <option>Partial</option>
-                                    <option>Failed</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <select name="paymentStatus" id="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Paid">Paid</option>
+                                        <option value="Partial">Partially Paid</option>
+                                        <option value="Refunded">Refunded</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="bookingRefNo" className={labelClass}>Booking Ref No.</label>
-                                <input type="text" name="bookingRefNo" id="bookingRefNo" value={formData.bookingRefNo} placeholder="Booking Ref No." onChange={handleChange} className={inputClass} />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="bookingRefNo" className={labelClass}>Booking Ref. No.</label>
+                                <input type="text" name="bookingRefNo" id="bookingRefNo" placeholder="Booking Reference" value={formData.bookingRefNo} onChange={handleChange} className={inputClass} />
                             </div>
-                            <div className="relative">
+                        </div>
+                    </div>
+
+                    {/* Management & Special Settings */}
+                    <div>
+                        <h3 className={sectionTitleClass}><BriefcaseIcon className={iconClass} />Management & Special Settings</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className={inputGroupClass}>
                                 <label htmlFor="mgmtBlock" className={labelClass}>Management Block</label>
-                                <select name="mgmtBlock" id="mgmtBlock" value={formData.mgmtBlock} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>No</option>
-                                    <option>Yes</option>
-                                </select>
-                                <ChevronDownIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                <div className="relative">
+                                    <select name="mgmtBlock" id="mgmtBlock" value={formData.mgmtBlock} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2"}>
-                                <label htmlFor="billingInstruction" className={labelClass}>Billing Instruction</label>
-                                <input type="text" name="billingInstruction" id="billingInstruction" value={formData.billingInstruction} placeholder="Billing Instruction" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass}>
-                                <label htmlFor="temperature" className={labelClass}>Temperature (°C)</label>
-                                <input type="number" name="temperature" id="temperature" value={formData.temperature} placeholder="Temperature" onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputContainerClass + " sm:col-span-2 lg:col-span-2 flex flex-wrap gap-x-6 gap-y-2"}>
                             
+                            <div className={inputGroupClass + " flex items-end gap-4"}>
+                               
+                            </div>
+                            <div className={inputGroupClass}>
                                 <label htmlFor="vip" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="vip" id="vip" checked={formData.vip} onChange={handleChange} className="mr-1" />
-                                    VIP
+                                    <input type="checkbox" name="vip" id="vip" checked={formData.vip} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
+                                    VIP Guest
                                 </label>
                             </div>
-                            <div className="relative">
-                                <label htmlFor="status" className={labelClass}>Status</label>
-                                <select name="status" id="status" value={formData.status} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                    <option>Booked</option>
-                                    <option>Checked In</option>
-                                    <option>Checked Out</option>
-                                    <option>Cancelled</option>
-                                </select>
-                                <CheckBadgeIcon className="absolute right-3 top-1/2 translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            <div className={inputGroupClass}>
+                                <label htmlFor="status" className={labelClass}>Booking Status</label>
+                                <div className="relative">
+                                    <select name="status" id="status" value={formData.status} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
+                                        <option value="Booked">Booked</option>
+                                       
+                                        <option value="Checked in">Checked-in</option>
+                                        <option value="Checked out">Checked-out</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                        <option value="No Show">No Show</option>
+                                    </select>
+                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="col-span-full flex justify-center mt-6 gap-4">
-                    <button
-                        type="submit"
-                        className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
-                    >
-                        Update Booking
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => navigate("/booking")}
-                        className="bg-gray-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition transform hover:scale-105 shadow-md tracking-wider text-lg"
-                    >
-                        Cancel
-                    </button>
+                    {/* Submit Button */}
+                    {/* <div className="flex justify-center mt-10">
+                        <div>
+  <button
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8  shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl"
+                        >
+                            Create Booking
+                        </button>
+                        </div>
+                      
+                         <div className="ml-2">
+                             <button
+                            type="submit"
+                            className="bg-black hover:bg-black text-white font-bold py-3 px-8  shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl"
+                        >
+                            Back
+                        </button>
+                         </div>
+                    </div> */}
+<div className="flex justify-center mt-10">
+  <div>
+    <button
+      type="submit"
+      className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl sm:py-3 sm:px-8 sm:text-xl"
+    >
+      Create Booking
+    </button>
+  </div>
+
+  <div className="ml-2">
+    <button
+      type="submit"
+      className="bg-black hover:bg-black text-white font-bold py-3 px-8 shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl sm:py-3 sm:px-8 sm:text-xl"
+    >
+      Back
+    </button>
+  </div>
+</div>
+                </form>
+            </div>
+
+            {/* PhotoIdUpload Modal */}
+            {showPhotoIdModal && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <PhotoIdUpload
+                        onClose={handleClosePhotoIdModal}
+                        currentFiles={uploadedFiles} // Pass current files to the modal for initial display
+                    />
                 </div>
-            </form>
+            )}
         </div>
     );
 };
 
-export default EditBookingForm;
+export default AddBookingForm;
+
+
+
