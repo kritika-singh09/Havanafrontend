@@ -1,5 +1,550 @@
+// import React, { useState, useEffect, useCallback, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import toast, { Toaster } from 'react-hot-toast';
+// import Webcam from 'react-webcam';
+
+// // Import Heroicons
+// import {
+//     UserIcon,
+//     BuildingOfficeIcon,
+//     IdentificationIcon,
+//     HomeIcon,
+//     ChevronDownIcon,
+//     GlobeAltIcon,
+//     DocumentTextIcon, // Used for PDF icon
+//     TagIcon,
+//     BriefcaseIcon,
+//     BanknotesIcon,
+// } from '@heroicons/react/24/outline';
 
 
+// // --- PhotoIdUpload Component (Modal) ---
+// const PhotoIdUpload = ({ onClose, currentFiles }) => {
+//     // Initialize states with currentFiles passed from parent, or null if not provided
+//     const [studentAvatar, setStudentAvatar] = useState(currentFiles?.studentAvatar || null);
+//     const [idProofFront, setIdProofFront] = useState(currentFiles?.idProofFront || null);
+//     const [idProofBack, setIdProofBack] = useState(currentFiles?.idProofBack || null);
+
+//     // State to track which webcam is active for capture
+//     const [activeWebcam, setActiveWebcam] = useState(null); // Can be 'student', 'front', 'back'
+
+//     const webcamRef = useRef(null);
+
+//     // Helper function to convert data URL to File object
+//     const dataURLtoFile = (dataurl, filename) => {
+//         const arr = dataurl.split(',');
+//         const mime = arr[0].match(/:(.*?);/)[1];
+//         const bstr = atob(arr[1]);
+//         let n = bstr.length;
+//         const u8arr = new Uint8Array(n);
+//         while (n--) {
+//             u8arr[n] = bstr.charCodeAt(n);
+//         }
+//         return new File([u8arr], filename, { type: mime });
+//     };
+
+//     // Handler for file input changes
+//     const handleImageUpload = (e, setImageState) => {
+//         const file = e.target.files[0];
+//         if (file) {
+//             setImageState(file); // Set the file object to the state
+//             // If a file is manually uploaded, turn off any active webcam
+//             setActiveWebcam(null);
+//             toast.success("File selected successfully!");
+//         } else {
+//             console.error("No file selected.");
+//             toast.error("No file selected.");
+//         }
+//     };
+
+//     // Handler for capturing image from webcam
+//     // It now takes a function to set the specific image state and a descriptive name
+//     const captureImage = useCallback((setImageState, docType) => {
+//         if (webcamRef.current) {
+//             const imageSrc = webcamRef.current.getScreenshot();
+//             if (imageSrc) {
+//                 // Convert the base64 image from webcam to a File object
+//                 const capturedFile = dataURLtoFile(imageSrc, `${docType.toLowerCase().replace(/\s/g, '_')}.png`);
+//                 setImageState(capturedFile); // Set the captured image (File object) to the specific state
+//                 setActiveWebcam(null); // Hide webcam after successful capture
+//                 toast.success(`${docType} captured successfully!`);
+//             } else {
+//                 toast.error(`Failed to capture image for ${docType}.`);
+//             }
+//         }
+//     }, []); // Dependencies are stable, so empty array
+
+//     // Helper function to render image previews for each section
+//     const renderImagePreview = (imageFile, setImageState) => {
+//         // If an imageFile exists (i.e., a file has been selected or captured)
+//         if (imageFile) {
+//             const isPdf = imageFile.type === "application/pdf"; // Check if the file is a PDF
+
+//             return (
+//                 <div className="relative mt-4 w-48 h-48 rounded-lg overflow-hidden border-4 border-purple-400 shadow-md flex items-center justify-center bg-gray-200">
+//                     {isPdf ? (
+//                         // If the file is a PDF, show a PDF icon and its name
+//                         <div className="text-gray-600 text-center text-sm p-2">
+//                             <DocumentTextIcon className="h-10 w-10 mx-auto mb-2 text-gray-500" />
+//                             PDF File: <br /> {imageFile.name}
+//                         </div>
+//                     ) : (
+//                         // **If the file is an image (not a PDF), display the image preview**
+//                         <img
+//                             src={URL.createObjectURL(imageFile)} // This creates a temporary URL for the image file to display it
+//                             alt="Preview"
+//                             className="object-cover w-full h-full"
+//                         />
+//                     )}
+//                     {/* Button to remove/clear the currently displayed image/document */}
+//                     <button
+//                         onClick={() => setImageState(null)} // Allows removing the uploaded/captured image
+//                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg hover:bg-red-600 transition-colors"
+//                         aria-label="Remove image"
+//                     >
+//                         X
+//                     </button>
+//                 </div>
+//             );
+//         }
+//         // If no imageFile exists (no file selected/captured yet), show "No image uploaded" text
+//         return (
+//             <div className="mt-4 w-48 h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-center p-4">
+//                 No image uploaded
+//             </div>
+//         );
+//     };
+
+//     return (
+//         <div className="bg-white p-4 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-4xl font-inter relative mx-auto">
+//             <button
+//                 // On close, pass back all three image files (even if null)
+//                 onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+//                 className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 transition-colors"
+//                 aria-label="Close photo upload"
+//             >
+//                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+//                 </svg>
+//             </button>
+
+//             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Photo & ID Upload</h2>
+
+//             {/* Grid for upload sections */}
+//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+//                 {/* Section 1: Student Avatar Upload */}
+//                 <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">Student Photo</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*" // Only allows image files here
+//                         onChange={(e) => setStudentAvatar(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-2 file:sm:mr-4 file:py-1 file:sm:py-2 file:px-2 file:sm:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-xs file:sm:text-sm file:font-semibold
+//                             file:bg-purple-50 file:text-purple-700
+//                             hover:file:bg-purple-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(studentAvatar, setStudentAvatar)}
+//                     <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'student' ? null : 'student')}
+//                             className="flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'student' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setStudentAvatar, 'Student Photo')}
+//                             disabled={activeWebcam !== 'student'} // Enable capture only if 'student' webcam is active
+//                             className={`flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'student' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Section 2: ID Proof Front Upload */}
+//                 <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">ID Proof (Front)</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*,application/pdf" // Allows both images and PDFs
+//                         onChange={(e) => setIdProofFront(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-2 file:sm:mr-4 file:py-1 file:sm:py-2 file:px-2 file:sm:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-xs file:sm:text-sm file:font-semibold
+//                             file:bg-blue-50 file:text-blue-700
+//                             hover:file:bg-blue-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(idProofFront, setIdProofFront)}
+//                     <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'front' ? null : 'front')}
+//                             className="flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'front' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setIdProofFront, 'ID Proof Front')}
+//                             disabled={activeWebcam !== 'front'} // Enable capture only if 'front' webcam is active
+//                             className={`flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'front' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Section 3: ID Proof Back Upload */}
+//                 <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">ID Proof (Back)</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*,application/pdf" // Allows both images and PDFs
+//                         onChange={(e) => setIdProofBack(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-2 file:sm:mr-4 file:py-1 file:sm:py-2 file:px-2 file:sm:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-xs file:sm:text-sm file:font-semibold
+//                             file:bg-green-50 file:text-green-700
+//                             hover:file:bg-green-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(idProofBack, setIdProofBack)}
+//                     <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'back' ? null : 'back')}
+//                             className="flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'back' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setIdProofBack, 'ID Proof Back')}
+//                             disabled={activeWebcam !== 'back'} // Enable capture only if 'back' webcam is active
+//                             className={`flex-1 px-3 py-2 text-sm sm:px-4 sm:py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'back' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Dedicated Webcam Display (conditionally rendered below the sections for better visibility) */}
+//                 {activeWebcam && (
+//                     <div className="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center mt-4">
+//                         <div className="relative w-full max-w-xs sm:max-w-sm mx-auto rounded-lg overflow-hidden shadow-md border-2 border-indigo-400">
+//                             <Webcam
+//                                 audio={false}
+//                                 ref={webcamRef}
+//                                 screenshotFormat="image/png"
+//                                 className="w-full h-auto"
+//                                 videoConstraints={{ facingMode: "user" }} // Use front camera
+//                             />
+//                         </div>
+//                     </div>
+//                 )}
+//             </div>
+
+//             <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 flex justify-center space-x-3 sm:space-x-4">
+//                 <button
+//                     type="button"
+//                     // On "Done", pass back the latest state of all three files
+//                     onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+//                     className="px-5 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white font-bold text-sm sm:text-base shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75"
+//                 >
+//                     Done
+//                 </button>
+//             </div>
+//         </div>
+//     );
+// };
+
+
+
+// import React, { useState, useEffect, useCallback, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import toast, { Toaster } from 'react-hot-toast';
+// import Webcam from 'react-webcam';
+
+// // Import Heroicons
+// import {
+//     UserIcon,
+//     BuildingOfficeIcon,
+//     IdentificationIcon,
+//     HomeIcon,
+//     ChevronDownIcon,
+//     GlobeAltIcon,
+//     DocumentTextIcon, // Used for PDF icon
+//     TagIcon,
+//     BriefcaseIcon,
+//     BanknotesIcon,
+// } from '@heroicons/react/24/outline';
+
+
+// // --- PhotoIdUpload Component (Modal) ---
+// const PhotoIdUpload = ({ onClose, currentFiles }) => {
+//     // Initialize states with currentFiles passed from parent, or null if not provided
+//     const [studentAvatar, setStudentAvatar] = useState(currentFiles?.studentAvatar || null);
+//     const [idProofFront, setIdProofFront] = useState(currentFiles?.idProofFront || null);
+//     const [idProofBack, setIdProofBack] = useState(currentFiles?.idProofBack || null);
+
+//     // State to track which webcam is active for capture
+//     const [activeWebcam, setActiveWebcam] = useState(null); // Can be 'student', 'front', 'back'
+
+//     const webcamRef = useRef(null);
+
+//     // Helper function to convert data URL to File object
+//     const dataURLtoFile = (dataurl, filename) => {
+//         const arr = dataurl.split(',');
+//         const mime = arr[0].match(/:(.*?);/)[1];
+//         const bstr = atob(arr[1]);
+//         let n = bstr.length;
+//         const u8arr = new Uint8Array(n);
+//         while (n--) {
+//             u8arr[n] = bstr.charCodeAt(n);
+//         }
+//         return new File([u8arr], filename, { type: mime });
+//     };
+
+//     // Handler for file input changes
+//     const handleImageUpload = (e, setImageState) => {
+//         const file = e.target.files[0];
+//         if (file) {
+//             setImageState(file); // Set the file object to the state
+//             // If a file is manually uploaded, turn off any active webcam
+//             setActiveWebcam(null);
+//             toast.success("File selected successfully!");
+//         } else {
+//             console.error("No file selected.");
+//             toast.error("No file selected.");
+//         }
+//     };
+
+//     // Handler for capturing image from webcam
+//     // It now takes a function to set the specific image state and a descriptive name
+//     const captureImage = useCallback((setImageState, docType) => {
+//         if (webcamRef.current) {
+//             const imageSrc = webcamRef.current.getScreenshot();
+//             if (imageSrc) {
+//                 // Convert the base64 image from webcam to a File object
+//                 const capturedFile = dataURLtoFile(imageSrc, `${docType.toLowerCase().replace(/\s/g, '_')}.png`);
+//                 setImageState(capturedFile); // Set the captured image (File object) to the specific state
+//                 setActiveWebcam(null); // Hide webcam after successful capture
+//                 toast.success(`${docType} captured successfully!`);
+//             } else {
+//                 toast.error(`Failed to capture image for ${docType}.`);
+//             }
+//         }
+//     }, []); // Dependencies are stable, so empty array
+
+//     // Helper function to render image previews for each section
+//     const renderImagePreview = (imageFile, setImageState) => {
+//         // If an imageFile exists (i.e., a file has been selected or captured)
+//         if (imageFile) {
+//             const isPdf = imageFile.type === "application/pdf"; // Check if the file is a PDF
+
+//             return (
+//                 <div className="relative mt-4 w-48 h-48 rounded-lg overflow-hidden border-4 border-purple-400 shadow-md flex items-center justify-center bg-gray-200">
+//                     {isPdf ? (
+//                         // If the file is a PDF, show a PDF icon and its name
+//                         <div className="text-gray-600 text-center text-sm p-2">
+//                             <DocumentTextIcon className="h-10 w-10 mx-auto mb-2 text-gray-500" />
+//                             PDF File: <br /> {imageFile.name}
+//                         </div>
+//                     ) : (
+//                         // **If the file is an image (not a PDF), display the image preview**
+//                         <img
+//                             src={URL.createObjectURL(imageFile)} // This creates a temporary URL for the image file to display it
+//                             alt="Preview"
+//                             className="object-cover w-full h-full"
+//                         />
+//                     )}
+//                     {/* Button to remove/clear the currently displayed image/document */}
+//                     <button
+//                         onClick={() => setImageState(null)} // Allows removing the uploaded/captured image
+//                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg hover:bg-red-600 transition-colors"
+//                         aria-label="Remove image"
+//                     >
+//                         X
+//                     </button>
+//                 </div>
+//             );
+//         }
+//         // If no imageFile exists (no file selected/captured yet), show "No image uploaded" text
+//         return (
+//             <div className="mt-4 w-48 h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-center p-4">
+//                 No image uploaded
+//             </div>
+//         );
+//     };
+
+//     return (
+//         <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl font-inter relative">
+//             <button
+//                 // On close, pass back all three image files (even if null)
+//                 onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+//                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors"
+//                 aria-label="Close photo upload"
+//             >
+//                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+//                 </svg>
+//             </button>
+
+//             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Photo & ID Upload</h2>
+
+//             {/* Grid for upload sections */}
+//             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+//                 {/* Section 1: Student Avatar Upload */}
+//                 <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-lg font-semibold text-gray-700 mb-3">Student Photo</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*" // Only allows image files here
+//                         onChange={(e) => setStudentAvatar(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-4 file:py-2 file:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-sm file:font-semibold
+//                             file:bg-purple-50 file:text-purple-700
+//                             hover:file:bg-purple-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(studentAvatar, setStudentAvatar)}
+//                     <div className="mt-4 flex space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'student' ? null : 'student')}
+//                             className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'student' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setStudentAvatar, 'Student Photo')}
+//                             disabled={activeWebcam !== 'student'} // Enable capture only if 'student' webcam is active
+//                             className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'student' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Section 2: ID Proof Front Upload */}
+//                 <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Front)</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*,application/pdf" // Allows both images and PDFs
+//                         onChange={(e) => setIdProofFront(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-4 file:py-2 file:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-sm file:font-semibold
+//                             file:bg-blue-50 file:text-blue-700
+//                             hover:file:bg-blue-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(idProofFront, setIdProofFront)}
+//                     <div className="mt-4 flex space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'front' ? null : 'front')}
+//                             className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'front' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setIdProofFront, 'ID Proof Front')}
+//                             disabled={activeWebcam !== 'front'} // Enable capture only if 'front' webcam is active
+//                             className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'front' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Section 3: ID Proof Back Upload */}
+//                 <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
+//                     <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Back)</label>
+//                     <input
+//                         type="file"
+//                         accept="image/*,application/pdf" // Allows both images and PDFs
+//                         onChange={(e) => setIdProofBack(e.target.files[0])} // Corrected to use setter directly
+//                         className="block w-full text-sm text-gray-500
+//                             file:mr-4 file:py-2 file:px-4
+//                             file:rounded-md file:border-0
+//                             file:text-sm file:font-semibold
+//                             file:bg-green-50 file:text-green-700
+//                             hover:file:bg-green-100 cursor-pointer"
+//                     />
+//                     {renderImagePreview(idProofBack, setIdProofBack)}
+//                     <div className="mt-4 flex space-x-3 w-full justify-center">
+//                         <button
+//                             type="button"
+//                             onClick={() => setActiveWebcam(activeWebcam === 'back' ? null : 'back')}
+//                             className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+//                         >
+//                             {activeWebcam === 'back' ? 'Hide Camera' : 'Show Camera'}
+//                         </button>
+//                         <button
+//                             type="button"
+//                             onClick={() => captureImage(setIdProofBack, 'ID Proof Back')}
+//                             disabled={activeWebcam !== 'back'} // Enable capture only if 'back' webcam is active
+//                             className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+//                                 activeWebcam === 'back' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
+//                             } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+//                         >
+//                             Capture
+//                         </button>
+//                     </div>
+//                 </div>
+
+//                 {/* Dedicated Webcam Display (conditionally rendered below the sections for better visibility) */}
+//                 {activeWebcam && (
+//                     <div className="md:col-span-2 lg:col-span-3 flex justify-center mt-4">
+//                         <div className="relative w-full max-w-sm mx-auto rounded-lg overflow-hidden shadow-md border-2 border-indigo-400">
+//                             <Webcam
+//                                 audio={false}
+//                                 ref={webcamRef}
+//                                 screenshotFormat="image/png"
+//                                 className="w-full h-auto"
+//                                 videoConstraints={{ facingMode: "user" }} // Use front camera
+//                             />
+//                         </div>
+//                     </div>
+//                 )}
+//             </div>
+
+//             <div className="mt-8 pt-6 border-t border-gray-200 flex justify-center space-x-4">
+//                 <button
+//                     type="button"
+//                     // On "Done", pass back the latest state of all three files
+//                     onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
+//                     className="px-6 py-3 bg-indigo-600 text-white font-bold  shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75"
+//                 >
+//                     Done
+//                 </button>
+//             </div>
+//         </div>
+//     );
+// };
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -84,11 +629,11 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
             const isPdf = imageFile.type === "application/pdf"; // Check if the file is a PDF
 
             return (
-                <div className="relative mt-4 w-48 h-48 rounded-lg overflow-hidden border-4 border-purple-400 shadow-md flex items-center justify-center bg-gray-200">
+                <div className="relative mt-4 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-lg overflow-hidden border-4 border-purple-400 shadow-md flex items-center justify-center bg-gray-200"> {/* Responsive size */}
                     {isPdf ? (
                         // If the file is a PDF, show a PDF icon and its name
-                        <div className="text-gray-600 text-center text-sm p-2">
-                            <DocumentTextIcon className="h-10 w-10 mx-auto mb-2 text-gray-500" />
+                        <div className="text-gray-600 text-center text-xs sm:text-sm p-1 sm:p-2"> {/* Responsive text size and padding */}
+                            <DocumentTextIcon className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-1 sm:mb-2 text-gray-500" /> {/* Responsive icon size */}
                             PDF File: <br /> {imageFile.name}
                         </div>
                     ) : (
@@ -102,7 +647,7 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                     {/* Button to remove/clear the currently displayed image/document */}
                     <button
                         onClick={() => setImageState(null)} // Allows removing the uploaded/captured image
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg hover:bg-red-600 transition-colors"
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs font-bold shadow-lg hover:bg-red-600 transition-colors" // Responsive size and text
                         aria-label="Remove image"
                     >
                         X
@@ -112,49 +657,49 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
         }
         // If no imageFile exists (no file selected/captured yet), show "No image uploaded" text
         return (
-            <div className="mt-4 w-48 h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-center p-4">
+            <div className="mt-4 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-center p-2 text-xs sm:text-sm"> {/* Responsive size and text */}
                 No image uploaded
             </div>
         );
     };
 
     return (
-        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl font-inter relative">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-sm sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl font-inter relative mx-auto my-4"> {/* Responsive max-width and padding */}
             <button
                 // On close, pass back all three image files (even if null)
                 onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 transition-colors"
                 aria-label="Close photo upload"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"> {/* Responsive icon size */}
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
 
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Photo & ID Upload</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Photo & ID Upload</h2> {/* Responsive heading size and margin */}
 
             {/* Grid for upload sections */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"> {/* Responsive grid columns and gap */}
                 {/* Section 1: Student Avatar Upload */}
-                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
-                    <label className="text-lg font-semibold text-gray-700 mb-3">Student Photo</label>
+                <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50"> {/* Responsive padding */}
+                    <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">Student Photo</label> {/* Responsive text size and margin */}
                     <input
                         type="file"
                         accept="image/*" // Only allows image files here
                         onChange={(e) => setStudentAvatar(e.target.files[0])} // Corrected to use setter directly
-                        className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
+                        className="block w-full text-xs sm:text-sm text-gray-500
+                            file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4
                             file:rounded-md file:border-0
-                            file:text-sm file:font-semibold
+                            file:text-xs sm:file:text-sm file:font-semibold
                             file:bg-purple-50 file:text-purple-700
-                            hover:file:bg-purple-100 cursor-pointer"
+                            hover:file:bg-purple-100 cursor-pointer" // Responsive file input styles
                     />
                     {renderImagePreview(studentAvatar, setStudentAvatar)}
-                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                    <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center"> {/* Responsive margin and space */}
                         <button
                             type="button"
                             onClick={() => setActiveWebcam(activeWebcam === 'student' ? null : 'student')}
-                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                            className="flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md" // Responsive button styles
                         >
                             {activeWebcam === 'student' ? 'Hide Camera' : 'Show Camera'}
                         </button>
@@ -162,9 +707,9 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                             type="button"
                             onClick={() => captureImage(setStudentAvatar, 'Student Photo')}
                             disabled={activeWebcam !== 'student'} // Enable capture only if 'student' webcam is active
-                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                            className={`flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-green-500 text-white text-sm sm:text-base font-semibold shadow-md transition-transform transform rounded-md ${
                                 activeWebcam === 'student' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
-                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`} // Responsive button styles
                         >
                             Capture
                         </button>
@@ -172,25 +717,25 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                 </div>
 
                 {/* Section 2: ID Proof Front Upload */}
-                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
-                    <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Front)</label>
+                <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50"> {/* Responsive padding */}
+                    <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">ID Proof (Front)</label> {/* Responsive text size and margin */}
                     <input
                         type="file"
                         accept="image/*,application/pdf" // Allows both images and PDFs
                         onChange={(e) => setIdProofFront(e.target.files[0])} // Corrected to use setter directly
-                        className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
+                        className="block w-full text-xs sm:text-sm text-gray-500
+                            file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4
                             file:rounded-md file:border-0
-                            file:text-sm file:font-semibold
+                            file:text-xs sm:file:text-sm file:font-semibold
                             file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100 cursor-pointer"
+                            hover:file:bg-blue-100 cursor-pointer" // Responsive file input styles
                     />
                     {renderImagePreview(idProofFront, setIdProofFront)}
-                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                    <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center"> {/* Responsive margin and space */}
                         <button
                             type="button"
                             onClick={() => setActiveWebcam(activeWebcam === 'front' ? null : 'front')}
-                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                            className="flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md" // Responsive button styles
                         >
                             {activeWebcam === 'front' ? 'Hide Camera' : 'Show Camera'}
                         </button>
@@ -198,9 +743,9 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                             type="button"
                             onClick={() => captureImage(setIdProofFront, 'ID Proof Front')}
                             disabled={activeWebcam !== 'front'} // Enable capture only if 'front' webcam is active
-                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                            className={`flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-green-500 text-white text-sm sm:text-base font-semibold shadow-md transition-transform transform rounded-md ${
                                 activeWebcam === 'front' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
-                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`} // Responsive button styles
                         >
                             Capture
                         </button>
@@ -208,25 +753,25 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                 </div>
 
                 {/* Section 3: ID Proof Back Upload */}
-                <div className="flex flex-col items-center p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50">
-                    <label className="text-lg font-semibold text-gray-700 mb-3">ID Proof (Back)</label>
+                <div className="flex flex-col items-center p-3 sm:p-4 border border-gray-300 rounded-lg shadow-inner bg-gray-50"> {/* Responsive padding */}
+                    <label className="text-base sm:text-lg font-semibold text-gray-700 mb-2 sm:mb-3">ID Proof (Back)</label> {/* Responsive text size and margin */}
                     <input
                         type="file"
                         accept="image/*,application/pdf" // Allows both images and PDFs
                         onChange={(e) => setIdProofBack(e.target.files[0])} // Corrected to use setter directly
-                        className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
+                        className="block w-full text-xs sm:text-sm text-gray-500
+                            file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4
                             file:rounded-md file:border-0
-                            file:text-sm file:font-semibold
+                            file:text-xs sm:file:text-sm file:font-semibold
                             file:bg-green-50 file:text-green-700
-                            hover:file:bg-green-100 cursor-pointer"
+                            hover:file:bg-green-100 cursor-pointer" // Responsive file input styles
                     />
                     {renderImagePreview(idProofBack, setIdProofBack)}
-                    <div className="mt-4 flex space-x-3 w-full justify-center">
+                    <div className="mt-3 sm:mt-4 flex space-x-2 sm:space-x-3 w-full justify-center"> {/* Responsive margin and space */}
                         <button
                             type="button"
                             onClick={() => setActiveWebcam(activeWebcam === 'back' ? null : 'back')}
-                            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md"
+                            className="flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-yellow-600 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 rounded-md" // Responsive button styles
                         >
                             {activeWebcam === 'back' ? 'Hide Camera' : 'Show Camera'}
                         </button>
@@ -234,9 +779,9 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                             type="button"
                             onClick={() => captureImage(setIdProofBack, 'ID Proof Back')}
                             disabled={activeWebcam !== 'back'} // Enable capture only if 'back' webcam is active
-                            className={`flex-1 px-4 py-2 bg-green-500 text-white font-semibold shadow-md transition-transform transform rounded-md ${
+                            className={`flex-1 px-3 py-1 sm:px-4 sm:py-2 bg-green-500 text-white text-sm sm:text-base font-semibold shadow-md transition-transform transform rounded-md ${
                                 activeWebcam === 'back' ? 'hover:bg-green-600 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'
-                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`}
+                            } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75`} // Responsive button styles
                         >
                             Capture
                         </button>
@@ -246,7 +791,7 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                 {/* Dedicated Webcam Display (conditionally rendered below the sections for better visibility) */}
                 {activeWebcam && (
                     <div className="md:col-span-2 lg:col-span-3 flex justify-center mt-4">
-                        <div className="relative w-full max-w-sm mx-auto rounded-lg overflow-hidden shadow-md border-2 border-indigo-400">
+                        <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto rounded-lg overflow-hidden shadow-md border-2 border-indigo-400"> {/* Responsive max-width */}
                             <Webcam
                                 audio={false}
                                 ref={webcamRef}
@@ -259,12 +804,12 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
                 )}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-200 flex justify-center space-x-4">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 flex justify-center space-x-3 sm:space-x-4"> {/* Responsive margin, padding, and space */}
                 <button
                     type="button"
                     // On "Done", pass back the latest state of all three files
                     onClick={() => onClose({ studentAvatar, idProofFront, idProofBack })}
-                    className="px-6 py-3 bg-indigo-600 text-white font-bold  shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75"
+                    className="px-5 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white text-base sm:text-lg font-bold shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 rounded-md" // Responsive button styles
                 >
                     Done
                 </button>
@@ -272,8 +817,6 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
         </div>
     );
 };
-
-
 const AddBookingForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
