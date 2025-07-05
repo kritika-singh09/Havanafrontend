@@ -275,651 +275,1351 @@ const PhotoIdUpload = ({ onClose, currentFiles }) => {
 
 
 const AddBookingForm = () => {
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        grcNo: "",
-        checkInDate: "",
-        checkOutDate: "",
-        days: "",
-        timeIn: "",
-        timeOut: "",
-        salutation: "",
-        name: "",
-        age: "",
-        gender: "Male",
-        address: "",
-        city: "",
-        nationality: "Indian",
-        mobileNo: "",
-        email: "",
-        phoneNo: "",
-        birthDate: "",
-        anniversary: "",
-        companyName: "",
-        companyGSTIN: "",
-        idProofType: "Aadhaar Card",
-        idProofNumber: "",
-        roomNo: "",
-        planPackage: "",
-        noOfAdults: "",
-        noOfChildren: "",
-        rate: "",
-        taxIncluded: false,
-        serviceCharge: false,
-        isLeader: false,
-        arrivedFrom: "",
-        destination: "",
-        remark: "",
-        businessSource: "",
-        marketSegment: "",
-        purposeOfVisit: "Personal",
-        discountPercent: "",
-        discountRoomSource: "",
-        paymentMode: "Cash",
-        paymentStatus: "Pending",
-        bookingRefNo: "",
-        mgmtBlock: "No",
-        billingInstruction: "",
-        temperature: "",
-        fromCSV: false,
-        epabx: false,
-        vip: false,
-        status: "Pending", // Default status for new bookings
-    });
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    grcNo: "",
+    checkInDate: "",
+    checkOutDate: "",
+    days: "",
+    timeIn: "",
+    timeOut: "",
+    salutation: "",
+    name: "",
+    age: "",
+    gender: "Male",
+    address: "",
+    city: "",
+    nationality: "Indian",
+    mobileNo: "",
+    email: "",
+    phoneNo: "",
+    birthDate: "",
+    anniversary: "",
+    companyName: "",
+    companyGSTIN: "",
+    idProofType: "Aadhaar Card",
+    idProofNumber: "",
+    // These fields are part of formData but their values (URLs or null for new uploads)
+    // will be managed and derived from `uploadedFiles` and `existingImageUrls` states for rendering and submission
+    photoUrl: "",
+    idProofImageUrl: "",
+    idProofImageUrl2: "",
+    roomNo: "",
+    planPackage: "",
+    noOfAdults: "",
+    noOfChildren: "",
+    rate: "",
+    taxIncluded: false,
+    serviceCharge: false,
+    isLeader: false,
+    arrivedFrom: "",
+    destination: "",
+    remark: "",
+    businessSource: "",
+    marketSegment: "",
+    purposeOfVisit: "Personal",
+    discountPercent: "",
+    discountRoomSource: "",
+    paymentMode: "Cash",
+    paymentStatus: "Pending",
+    bookingRefNo: "",
+    mgmtBlock: "No",
+    billingInstruction: "",
+    temperature: "",
+    fromCSV: false,
+    epabx: false,
+    vip: false,
+    status: "Pending",
+  });
 
-    const [marketSegmentOptions, setMarketSegmentOptions] = useState([]);
-    const [showMarketSegmentInput, setShowMarketSegmentInput] = useState(false);
-    const [showPhotoIdModal, setShowPhotoIdModal] = useState(false);
+  const [marketSegmentOptions, setMarketSegmentOptions] = useState([]);
+  const [showMarketSegmentInput, setShowMarketSegmentInput] = useState(false);
+  const [showPhotoIdModal, setShowPhotoIdModal] = useState(false);
 
-    // State for multiple files - these will now hold the actual File objects
-    const [uploadedFiles, setUploadedFiles] = useState({
-        studentAvatar: null,
-        idProofFront: null,
-        idProofBack: null,
-        otherDocument: null, // Assuming you might have an "otherDocument" input somewhere too
-    });
+  // State for newly uploaded files (File objects from the modal)
+  const [uploadedFiles, setUploadedFiles] = useState({
+    studentAvatar: null,
+    idProofFront: null,
+    idProofBack: null,
+    otherDocument: null,
+  });
 
-    useEffect(() => {
-        let options = [];
-        let showInput = false;
+  // State for existing image URLs loaded from backend when GRC is entered
+  const [existingImageUrls, setExistingImageUrls] = useState({
+    studentAvatar: "", // Corresponds to photoUrl from backend
+    idProofFront: "",  // Corresponds to idProofImageUrl2 from backend (assuming front)
+    idProofBack: "",   // Corresponds to idProofImageUrl from backend (assuming back)
+    otherDocument: "", // For otherDocument from backend if exists
+  });
 
-        switch (formData.businessSource) {
-            case "Online OTA":
-                options = ["MakeMyTrip", "Goibibo", "Booking.com", "Agoda", "Expedia", "Others (Specify)"];
-                break;
-            case "Travel Agent":
-                options = ["Corporate Travel Agency", "Leisure Travel Agency", "Tour Operator", "Local Agent", "Others (Specify)"];
-                break;
-            case "Self Agent":
-                options = ["Company Website", "Mobile App", "Walk-in Online Booking"];
-                break;
-            case "Corporate":
-                options = ["Direct Corporate Booking", "Through Company Portal"];
-                break;
-            case "Walk-in":
-            case "Direct Call":
-            case "Referral":
-            case "":
-                options = [];
-                showInput = false;
-                break;
-            default:
-                options = [];
-                showInput = true;
-                break;
-        }
+  // Effect to handle Market Segment options based on Business Source
+  useEffect(() => {
+    let options = [];
+    let showInput = false;
 
-        setMarketSegmentOptions(options);
-        setShowMarketSegmentInput(showInput || (options.includes("Others (Specify)") && formData.marketSegment === "Others (Specify)"));
+    switch (formData.businessSource) {
+      case "Online OTA":
+        options = [
+          "MakeMyTrip",
+          "Goibibo",
+          "Booking.com",
+          "Agoda",
+          "Expedia",
+          "Others (Specify)",
+        ];
+        break;
+      case "Travel Agent":
+        options = [
+          "Corporate Travel Agency",
+          "Leisure Travel Agency",
+          "Tour Operator",
+          "Local Agent",
+          "Others (Specify)",
+        ];
+        break;
+      case "Self Agent":
+        options = ["Company Website", "Mobile App", "Walk-in Online Booking"];
+        break;
+      case "Corporate":
+        options = ["Direct Corporate Booking", "Through Company Portal"];
+        break;
+      case "Walk-in":
+      case "Direct Call":
+      case "Referral":
+      case "":
+        options = [];
+        showInput = false;
+        break;
+      default:
+        options = [];
+        showInput = true; // For "Other" business source, allow direct input
+        break;
+    }
 
-        if (!options.includes(formData.marketSegment) && !showInput && formData.marketSegment !== "") {
-            setFormData(prev => ({ ...prev, marketSegment: "" }));
-        } else if (showInput && options.includes(formData.marketSegment) && formData.marketSegment !== "Others (Specify)") {
-            setFormData(prev => ({ ...prev, marketSegment: "" }));
-        }
+    setMarketSegmentOptions(options);
+    setShowMarketSegmentInput(
+      showInput ||
+        (options.includes("Others (Specify)") &&
+          formData.marketSegment === "Others (Specify)")
+    );
 
-    }, [formData.businessSource, formData.marketSegment]);
+    // If selected market segment is no longer valid for the business source, clear it
+    if (
+      !options.includes(formData.marketSegment) &&
+      !showInput && // if it's not a direct input case
+      formData.marketSegment !== ""
+    ) {
+      setFormData((prev) => ({ ...prev, marketSegment: "" }));
+    } else if (
+      showInput && // if it IS a direct input case (e.g., "Other")
+      options.includes(formData.marketSegment) && // and current segment is one of the dropdown options
+      formData.marketSegment !== "Others (Specify)" // and not the "Others (Specify)"
+    ) {
+      // This ensures if user switches from e.g., "Online OTA" to "Other", market segment resets
+      setFormData((prev) => ({ ...prev, marketSegment: "" }));
+    }
+  }, [formData.businessSource, formData.marketSegment]);
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
+  // Effect to autofill data based on GRC No.
+  useEffect(() => {
+    const fetchGuestData = async () => {
+      // If GRC No is empty or too short, clear relevant guest data and image URLs
+      if (!formData.grcNo || formData.grcNo.length < 3) {
+        console.log("GRC No. is empty or too short. Clearing guest-related fields and images.");
+        setFormData(prev => ({
+          ...prev,
+          salutation: "", name: "", age: "", gender: "Male", address: "", city: "",
+          nationality: "Indian", mobileNo: "", email: "", phoneNo: "",
+          birthDate: "", anniversary: "", companyName: "", companyGSTIN: "",
+          idProofType: "Aadhaar Card", idProofNumber: "",
+          photoUrl: "", // Clear photoUrl in formData
+          idProofImageUrl: "", // Clear idProofImageUrl in formData
+          idProofImageUrl2: "", // Clear idProofImageUrl2 in formData
+          arrivedFrom: "", destination: "", remark: "", businessSource: "", marketSegment: "",
+          purposeOfVisit: "Personal", discountPercent: "", discountRoomSource: "",
+          billingInstruction: "", temperature: "", fromCSV: false, epabx: false, vip: false,
         }));
-    };
+        setUploadedFiles({ // Clear new upload files
+          studentAvatar: null,
+          idProofFront: null,
+          idProofBack: null,
+          otherDocument: null,
+        });
+        setExistingImageUrls({ // Clear existing image URLs
+          studentAvatar: "",
+          idProofFront: "",
+          idProofBack: "",
+          otherDocument: "",
+        });
+        return; // Exit if GRC No is empty or too short
+      }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (!formData.checkInDate || !formData.checkOutDate || !formData.name) {
-                toast.error("Please fill in all required fields (Check-in Date, Check-out Date, Full Name).");
-                return;
-            }
+      console.log(`Attempting to fetch guest data for GRC No: ${formData.grcNo}`);
+      try {
+        const API_URL = `https://havana-backend.vercel.app/api/bookings/guest-by-grc/${formData.grcNo}`;
+        console.log(`Fetching from URL: ${API_URL}`);
+        const response = await axios.get(API_URL);
+        const apiResponseObject = response.data; // This is the full object: { success: true, data: { ... } }
+        
+        console.log("--- API Raw Response Object ---", apiResponseObject); 
 
-            const dataToSubmit = new FormData();
-            for (const key in formData) {
-                dataToSubmit.append(key, formData[key]);
-            }
-            // Append all uploaded files with the correct backend schema keys
-            // These will now be the actual File objects, not URLs.
-            // Your backend must be ready to receive these files in the main booking POST request.
-            if (uploadedFiles.studentAvatar) {
-                dataToSubmit.append("photoUrl", uploadedFiles.studentAvatar); // Changed from studentAvatar to photoUrl
-            }
-            if (uploadedFiles.idProofFront) {
-                dataToSubmit.append("idProofImageUrl2", uploadedFiles.idProofFront); // Changed from idProofFront to idProofImageUrl2
-            }
-            if (uploadedFiles.idProofBack) {
-                dataToSubmit.append("idProofImageUrl", uploadedFiles.idProofBack); // Changed from idProofBack to idProofImageUrl
-            }
-            if (uploadedFiles.otherDocument) {
-                dataToSubmit.append("otherDocument", uploadedFiles.otherDocument);
-            }
+        // Access the actual guest/booking data which is nested under the 'data' key
+        const bookingData = apiResponseObject.data; 
 
-            console.log("Submitting form data:", formData);
-            console.log("Submitting uploaded files (renamed for backend, as File objects):", uploadedFiles);
+        if (bookingData && Object.keys(bookingData).length > 0) {
+          toast.success(`Guest data found for GRC No. ${formData.grcNo}. Autofilling form.`);
 
+          const updatedFormDataFromBooking = {
+            salutation: bookingData.salutation || "",
+            name: bookingData.name || "",
+            age: bookingData.age || "",
+            gender: bookingData.gender || "Male",
+            address: bookingData.address || "",
+            city: bookingData.city || "",
+            nationality: bookingData.nationality || "Indian",
+            mobileNo: bookingData.mobileNo || "",
+            email: bookingData.email || "",
+            phoneNo: bookingData.phoneNo || "",
+            birthDate: bookingData.birthDate
+              ? new Date(bookingData.birthDate).toISOString().split("T")[0]
+              : "",
+            anniversary: bookingData.anniversary
+              ? new Date(bookingData.anniversary).toISOString().split("T")[0]
+              : "",
+            idProofType: bookingData.idProofType || "Aadhaar Card",
+            idProofNumber: bookingData.idProofNumber || "",
+            // We set these directly into formData as they are text fields
+            companyName: bookingData.companyName || "",
+            companyGSTIN: bookingData.companyGSTIN || "",
+            arrivedFrom: bookingData.arrivedFrom || "",
+            destination: bookingData.destination || "",
+            remark: bookingData.remark || "",
+            businessSource: bookingData.businessSource || "",
+            marketSegment: bookingData.marketSegment || "",
+            purposeOfVisit: bookingData.purposeOfVisit || "Personal",
+            discountPercent: bookingData.discountPercent || "",
+            discountRoomSource: bookingData.discountRoomSource || "",
+            billingInstruction: bookingData.billingInstruction || "",
+            temperature: bookingData.temperature || "",
+            fromCSV: bookingData.fromCSV || false,
+            epabx: bookingData.epabx || false,
+            vip: bookingData.vip || false,
+          };
 
-            const response = await axios.post("https://havana-backend.vercel.app/api/bookings", dataToSubmit, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            toast.success("Booking Created Successfully!");
-            console.log("New booking created:", response.data);
+          setFormData((prev) => ({
+            ...prev,
+            ...updatedFormDataFromBooking,
+          }));
 
-            navigate("/booking");
-        } catch (error) {
-            console.error("Error creating booking:", error);
-            toast.error("Failed to create booking. Please try again. Error: " + (error.response?.data?.message || error.message));
-        }
-    };
+          // Set the existing image URLs state after successful fetch
+          setExistingImageUrls({
+              studentAvatar: bookingData.photoUrl || "",
+              idProofFront: bookingData.idProofImageUrl2 || "", // Assuming idProofImageUrl2 is front
+              idProofBack: bookingData.idProofImageUrl || "",   // Assuming idProofImageUrl is back
+              otherDocument: bookingData.otherDocument || "", // Assuming you have this field in backend too
+          });
+          // Clear any previously selected new files, as we're loading existing ones
+          setUploadedFiles({
+            studentAvatar: null,
+            idProofFront: null,
+            idProofBack: null,
+            otherDocument: null,
+          });
 
-    const handleOpenPhotoIdModal = () => {
-        setShowPhotoIdModal(true);
-    };
-
-    // Update to receive an object of files
-    const handleClosePhotoIdModal = (files) => {
-        setUploadedFiles(files); // This is where the File objects are saved
-        const anyFileSelected = Object.values(files).some(file => file !== null);
-        if (anyFileSelected) {
-            toast.success("Selected photos/documents updated in form data.");
         } else {
-            toast('No new photo or document selected/captured.', { icon: 'ℹ️' });
+          toast("No existing guest/booking found with this GRC No.", { icon: "ℹ️" });
+          // If no data found, clear guest-specific fields and image states
+          setFormData(prev => ({
+            ...prev,
+            salutation: "", name: "", age: "", gender: "Male", address: "", city: "",
+            nationality: "Indian", mobileNo: "", email: "", phoneNo: "",
+            birthDate: "", anniversary: "", companyName: "", companyGSTIN: "",
+            idProofType: "Aadhaar Card", idProofNumber: "",
+            photoUrl: "", // Clear photoUrl in formData
+            idProofImageUrl: "", // Clear idProofImageUrl in formData
+            idProofImageUrl2: "", // Clear idProofImageUrl2 in formData
+            arrivedFrom: "", destination: "", remark: "", businessSource: "", marketSegment: "",
+            purposeOfVisit: "Personal", discountPercent: "", discountRoomSource: "",
+            billingInstruction: "", temperature: "", fromCSV: false, epabx: false, vip: false,
+          }));
+          setUploadedFiles({ studentAvatar: null, idProofFront: null, idProofBack: null, otherDocument: null });
+          setExistingImageUrls({ studentAvatar: "", idProofFront: "", idProofBack: "", otherDocument: "" });
         }
-        setShowPhotoIdModal(false);
+      } catch (error) {
+        console.error("Error fetching guest data:", error);
+        if (error.response) {
+          console.error("Error response data:", error.response.data);
+          console.error("Error response status:", error.response.status);
+          toast.error(
+            `Failed to fetch guest data. Status: ${error.response.status}, Message: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          toast.error("Failed to fetch guest data. Network error or unknown problem.");
+        }
+        // On error, also ensure guest-specific fields and image states are cleared
+        setFormData(prev => ({
+          ...prev,
+          salutation: "", name: "", age: "", gender: "Male", address: "", city: "",
+          nationality: "Indian", mobileNo: "", email: "", phoneNo: "",
+          birthDate: "", anniversary: "", companyName: "", companyGSTIN: "",
+          idProofType: "Aadhaar Card", idProofNumber: "",
+          photoUrl: "", // Clear photoUrl in formData
+          idProofImageUrl: "", // Clear idProofImageUrl in formData
+          idProofImageUrl2: "", // Clear idProofImageUrl2 in formData
+          arrivedFrom: "", destination: "", remark: "", businessSource: "", marketSegment: "",
+          purposeOfVisit: "Personal", discountPercent: "", discountRoomSource: "",
+          billingInstruction: "", temperature: "", fromCSV: false, epabx: false, vip: false,
+        }));
+        setUploadedFiles({ studentAvatar: null, idProofFront: null, idProofBack: null, otherDocument: null });
+        setExistingImageUrls({ studentAvatar: "", idProofFront: "", idProofBack: "", otherDocument: "" });
+      }
     };
 
-    // This function is unrelated to the image upload removal, keeping it as is if needed for other functionality.
-    const updateBookingStatus = async (bookingId, newStatus) => {
-        try {
-            const response = await axios.patch(
-                `https://havana-backend.vercel.app/api/bookings/${bookingId}/status`,
-                { status: newStatus } // Send the new status in the request body
-            );
-            toast.success(`Booking ${bookingId} status updated to ${newStatus}!`);
-            console.log('Status updated successfully:', response.data);
-            return response.data;
-        } catch (error) {
-            console.error('Error updating booking status:', error);
-            toast.error(`Failed to update status for booking ${bookingId}. Error: ${error.response?.data?.message || error.message}`);
-            throw error;
+    // Use a debounce to prevent excessive API calls on every keystroke
+    const timeoutId = setTimeout(fetchGuestData, 500); // Wait 500ms after last keypress
+    return () => clearTimeout(timeoutId); // Cleanup previous timeout if GRC changes rapidly
+  }, [formData.grcNo]); // Dependency array: re-run effect when GRC No changes
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    // console.log(`handleChange: Name=${name}, Value=${value}, Type=${type}`); // Keep this for debugging if needed
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (!formData.checkInDate || !formData.checkOutDate || !formData.name) {
+        toast.error(
+          "Please fill in all required fields (Check-in Date, Check-out Date, Full Name)."
+        );
+        return;
+      }
+
+      const dataToSubmit = new FormData();
+      for (const key in formData) {
+        // Exclude image URLs from formData as they are managed by `uploadedFiles` and `existingImageUrls`
+        if (key === 'idProofImageUrl' || key === 'idProofImageUrl2' || key === 'photoUrl') {
+            continue;
         }
-    };
+        dataToSubmit.append(key, formData[key]);
+      }
+      
+      // Append `photoUrl` (Student Avatar)
+      if (uploadedFiles.studentAvatar) {
+        dataToSubmit.append("photoUrl", uploadedFiles.studentAvatar); // Send new File
+      } else if (existingImageUrls.studentAvatar) {
+        dataToSubmit.append("photoUrl", existingImageUrls.studentAvatar); // Send existing URL
+      } else {
+        dataToSubmit.append("photoUrl", ""); // Ensure it's explicitly empty if neither exists
+      }
 
-    // Helper function to render image previews *outside* the modal
-    const renderExternalImagePreview = (file, label) => {
-        if (file) {
-            const isPdf = file.type === "application/pdf";
-            return (
-                <div className="flex flex-col items-center p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm w-40 h-40 overflow-hidden text-center justify-center">
-                    <span className="text-sm font-semibold text-gray-700 mb-1">{label}</span>
-                    {isPdf ? (
-                        <div className="text-gray-600 text-xs mt-1">
-                            <DocumentTextIcon className="h-8 w-8 mx-auto mb-1 text-gray-500" />
-                            {file.name}
-                        </div>
-                    ) : (
-                        <img
-                            src={URL.createObjectURL(file)}
-                            alt={`${label} Preview`}
-                            className="object-cover w-full h-full rounded"
-                        />
-                    )}
-                </div>
-            );
+      // Append `idProofImageUrl2` (ID Front)
+      if (uploadedFiles.idProofFront) {
+        dataToSubmit.append("idProofImageUrl2", uploadedFiles.idProofFront); // Send new File
+      } else if (existingImageUrls.idProofFront) {
+        dataToSubmit.append("idProofImageUrl2", existingImageUrls.idProofFront); // Send existing URL
+      } else {
+        dataToSubmit.append("idProofImageUrl2", "");
+      }
+
+      // Append `idProofImageUrl` (ID Back)
+      if (uploadedFiles.idProofBack) {
+        dataToSubmit.append("idProofImageUrl", uploadedFiles.idProofBack); // Send new File
+      } else if (existingImageUrls.idProofBack) {
+        dataToSubmit.append("idProofImageUrl", existingImageUrls.idProofBack); // Send existing URL
+      } else {
+        dataToSubmit.append("idProofImageUrl", "");
+      }
+
+      // Append `otherDocument`
+      if (uploadedFiles.otherDocument) {
+        dataToSubmit.append("otherDocument", uploadedFiles.otherDocument); // Send new File
+      } else if (existingImageUrls.otherDocument) {
+        dataToSubmit.append("otherDocument", existingImageUrls.otherDocument); // Send existing URL
+      } else {
+        dataToSubmit.append("otherDocument", "");
+      }
+
+
+      console.log("Submitting form data (FormData object, inspect in network tab):", dataToSubmit);
+      console.log("Current uploadedFiles state:", uploadedFiles);
+      console.log("Current existingImageUrls state:", existingImageUrls);
+
+      const response = await axios.post(
+        "https://havana-backend.vercel.app/api/bookings",
+        dataToSubmit,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-        return null; // Don't render anything if no file
-    };
+      );
+      toast.success("Booking Created Successfully!");
+      console.log("New booking created response:", response.data);
 
-    // Styling classes
-    const sectionTitleClass = "text-xl font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2";
-    const inputGroupClass = "mb-3";
-    const labelClass = "block text-gray-700 text-sm font-semibold mb-1";
-    const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500 text-base";
-    const checkboxLabelClass = "flex items-center gap-2 text-gray-700 font-medium text-sm";
-    const iconClass = "h-5 w-5 text-gray-500";
+      navigate("/booking");
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast.error(
+        "Failed to create booking. Please try again. Error: " +
+          (error.response?.data?.message || error.message)
+      );
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+      }
+    }
+  };
 
-    const hasAnyUploadedFile = uploadedFiles.studentAvatar || uploadedFiles.idProofFront || uploadedFiles.idProofBack || uploadedFiles.otherDocument;
+  const handleOpenPhotoIdModal = () => {
+    setShowPhotoIdModal(true);
+  };
 
+  const handleClosePhotoIdModal = (files) => {
+    // When modal closes, update `uploadedFiles` with new selections.
+    // This will override any existing images in the preview if new ones are selected.
+    setUploadedFiles(files); 
+
+    const anyFileSelected = Object.values(files).some((file) => file !== null);
+    if (anyFileSelected) {
+      toast.success("Selected photos/documents updated.");
+    } else {
+      toast("No new photo or document selected/captured.", { icon: "ℹ️" });
+    }
+    setShowPhotoIdModal(false);
+  };
+
+  // Determines the source for rendering: new upload takes precedence over existing URL
+  const getDisplaySource = (newFile, existingUrl) => {
+    return newFile || existingUrl;
+  };
+
+  // Renders image or PDF preview based on source (File object or URL string)
+  const renderImageOrPdfPreview = (source, label) => {
+    if (!source) return null; // No source, no preview
+
+    let url = "";
+    let isPdf = false;
+    let fileName = "";
+
+    if (source instanceof File) {
+      url = URL.createObjectURL(source);
+      isPdf = source.type === "application/pdf";
+      fileName = source.name;
+    } else if (typeof source === 'string' && source.startsWith('http')) {
+      url = source;
+      isPdf = source.toLowerCase().endsWith('.pdf');
+      fileName = url.substring(url.lastIndexOf('/') + 1); // Extract filename from URL
+    } else {
+      console.warn(`Invalid source type for ${label}:`, source); // Log if source is unexpected
+      return null;
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 font-inter">
-            <Toaster position="top-right" reverseOrder={false} />
-
-            {/* Main Add Booking Form */}
-            <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl w-full">
-                <h2 className="text-4xl font-extrabold text-center text-gray-900 mb-10 tracking-tight">Add New Booking</h2>
-                <form onSubmit={handleSubmit} className="space-y-8"> {/* space-y-8 separates the major sections */}
-
-                    {/* Booking Details */}
-                    <div>
-                        <h3 className={sectionTitleClass}><DocumentTextIcon className={iconClass} />Booking Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="grcNo" className={labelClass}>GRC No.</label>
-                                <input type="text" name="grcNo" id="grcNo" placeholder="GRC No" value={formData.grcNo} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="checkInDate" className={labelClass}>Check-in Date <span className="text-red-500">*</span></label>
-                                <input type="date" name="checkInDate" id="checkInDate" value={formData.checkInDate} onChange={handleChange} className={inputClass} required />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="checkOutDate" className={labelClass}>Check-out Date <span className="text-red-500">*</span></label>
-                                <input type="date" name="checkOutDate" id="checkOutDate" value={formData.checkOutDate} onChange={handleChange} className={inputClass} required />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="days" className={labelClass}>Days</label>
-                                <input type="number" name="days" id="days" placeholder="Days" value={formData.days} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="timeIn" className={labelClass}>Time In</label>
-                                <input type="time" name="timeIn" id="timeIn" placeholder="e.g., 14:00" value={formData.timeIn} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="timeOut" className={labelClass}>Time Out</label>
-                                <input type="time" name="timeOut" id="timeOut" placeholder="e.g., 12:00" value={formData.timeOut} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Guest Information */}
-                    <div>
-                        <h3 className={sectionTitleClass}><UserIcon className={iconClass} />Guest Information</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="salutation" className={labelClass}>Salutation</label>
-                                <input type="text" name="salutation" id="salutation" placeholder="Mr./Ms./Dr." value={formData.salutation} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="name" className={labelClass}>Full Name <span className="text-red-500">*</span></label>
-                                <input type="text" name="name" id="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className={inputClass} required />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="age" className={labelClass}>Age</label>
-                                <input type="number" name="age" id="age" placeholder="Age" value={formData.age} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="gender" className={labelClass}>Gender</label>
-                                <div className="relative">
-                                    <select name="gender" id="gender" value={formData.gender} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass + " sm:col-span-2 lg:col-span-1"}> {/* Adjusted span */}
-                                <label htmlFor="address" className={labelClass}>Address</label>
-                                <input type="text" name="address" id="address" placeholder="Address" value={formData.address} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="city" className={labelClass}>City</label>
-                                <input type="text" name="city" id="city" placeholder="City" value={formData.city} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="nationality" className={labelClass}>Nationality</label>
-                                <div className="relative">
-                                    <input type="text" name="nationality" id="nationality" value={formData.nationality} readOnly className={inputClass + " bg-gray-100 cursor-not-allowed"} />
-                                    {/* You might consider making Nationality a selectable dropdown for common nationalities */}
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="mobileNo" className={labelClass}>Mobile No.</label>
-                                <input type="tel" name="mobileNo" id="mobileNo" placeholder="Mobile No." value={formData.mobileNo} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="email" className={labelClass}>Email</label>
-                                <input type="email" name="email" id="email" placeholder="Email" value={formData.email} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="phoneNo" className={labelClass}>Phone No.</label>
-                                <input type="tel" name="phoneNo" id="phoneNo" placeholder="Phone No." value={formData.phoneNo} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="birthDate" className={labelClass}>Birth Date</label>
-                                <input type="date" name="birthDate" id="birthDate" value={formData.birthDate} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="anniversary" className={labelClass}>Anniversary</label>
-                                <input type="date" name="anniversary" id="anniversary" value={formData.anniversary} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Company Details (Conditional) */}
-                    <div>
-                        <h3 className={sectionTitleClass}><BuildingOfficeIcon className={iconClass} />Company Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="companyName" className={labelClass}>Company Name</label>
-                                <input type="text" name="companyName" id="companyName" placeholder="Company Name" value={formData.companyName} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="companyGSTIN" className={labelClass}>Company GSTIN</label>
-                                <input type="text" name="companyGSTIN" id="companyGSTIN" placeholder="Company GSTIN" value={formData.companyGSTIN} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ID Proof & Documents */}
-                    <div>
-                        <h3 className={sectionTitleClass}><IdentificationIcon className={iconClass} />ID Proof & Documents</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="idProofType" className={labelClass}>ID Proof Type</label>
-                                <div className="relative">
-                                    <select name="idProofType" id="idProofType" value={formData.idProofType} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Aadhaar Card">Aadhaar Card</option>
-                                        <option value="Passport">Passport</option>
-                                        <option value="Driving License">Driving License</option>
-                                        <option value="Voter ID">Voter ID</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="idProofNumber" className={labelClass}>ID Proof Number</label>
-                                <input type="text" name="idProofNumber" id="idProofNumber" placeholder="ID Proof Number" value={formData.idProofNumber} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass + " flex items-end"}>
-                                <button
-                                    type="button"
-                                    onClick={handleOpenPhotoIdModal}
-                                    className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center gap-2"
-                                >
-                                    <IdentificationIcon className="h-5 w-5" /> Upload Photos/IDs
-                                </button>
-                            </div>
-                        </div>
-                        {/* --- Display Captured/Uploaded Images Here --- */}
-                        <div className="mt-6">
-                            {hasAnyUploadedFile ? (
-                                <div className="flex flex-wrap gap-4 justify-start">
-                                    {renderExternalImagePreview(uploadedFiles.studentAvatar, "Student Photo")}
-                                    {renderExternalImagePreview(uploadedFiles.idProofFront, "ID Front")}
-                                    {renderExternalImagePreview(uploadedFiles.idProofBack, "ID Back")}
-                                    {/* You can add otherDocument here if you implement it */}
-                                </div>
-                            ) : (
-                                <div className="mt-4 p-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-md">
-                                    No photos or ID documents selected yet.
-                                </div>
-                            )}
-                        </div>
-                        {/* --- End Display Area --- */}
-                    </div>
-
-                    {/* Room & Rate Details */}
-                    <div>
-                        <h3 className={sectionTitleClass}><HomeIcon className={iconClass} />Room & Rate Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="roomNo" className={labelClass}>Room No.</label>
-                                <input type="text" name="roomNo" id="roomNo" placeholder="Room No." value={formData.roomNo} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="planPackage" className={labelClass}>Plan/Package</label>
-                                <input type="text" name="planPackage" id="planPackage" placeholder="Plan/Package" value={formData.planPackage} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="noOfAdults" className={labelClass}>No. of Adults</label>
-                                <input type="number" name="noOfAdults" id="noOfAdults" placeholder="Adults" value={formData.noOfAdults} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="noOfChildren" className={labelClass}>No. of Children</label>
-                                <input type="number" name="noOfChildren" id="noOfChildren" placeholder="Children" value={formData.noOfChildren} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="rate" className={labelClass}>Rate</label>
-                                <input type="number" name="rate" id="rate" placeholder="Rate" value={formData.rate} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass + " flex items-end gap-4"}>
-                                <label htmlFor="taxIncluded" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="taxIncluded" id="taxIncluded" checked={formData.taxIncluded} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
-                                    Tax Included
-                                </label>
-                                <label htmlFor="serviceCharge" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="serviceCharge" id="serviceCharge" checked={formData.serviceCharge} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
-                                    Service Charge
-                                </label>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="isLeader" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="isLeader" id="isLeader" checked={formData.isLeader} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
-                                    Is Leader (for group bookings)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Travel Details */}
-                    <div>
-                        <h3 className={sectionTitleClass}><GlobeAltIcon className={iconClass} />Travel Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="arrivedFrom" className={labelClass}>Arrived From</label>
-                                <input type="text" name="arrivedFrom" id="arrivedFrom" placeholder="City/Country" value={formData.arrivedFrom} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="destination" className={labelClass}>Destination</label>
-                                <input type="text" name="destination" id="destination" placeholder="City/Country" value={formData.destination} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Additional Information */}
-                    <div>
-                        <h3 className={sectionTitleClass}><TagIcon className={iconClass} />Additional Information</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="remark" className={labelClass}>Remark</label>
-                                <textarea name="remark" id="remark" placeholder="Any special requests or notes" value={formData.remark} onChange={handleChange} className={inputClass + " h-20 resize-y"}></textarea>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="businessSource" className={labelClass}>Business Source</label>
-                                <div className="relative">
-                                    <select name="businessSource" id="businessSource" value={formData.businessSource} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="">Select Source</option>
-                                        <option value="Online OTA">Online OTA</option>
-                                        <option value="Travel Agent">Travel Agent</option>
-                                        <option value="Self Agent">Self Agent</option>
-                                        <option value="Corporate">Corporate</option>
-                                        <option value="Walk-in">Walk-in</option>
-                                        <option value="Direct Call">Direct Call</option>
-                                        <option value="Referral">Referral</option>
-                                        <option value="Other">Other (Specify)</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="marketSegment" className={labelClass}>Market Segment</label>
-                                <div className="relative">
-                                    {showMarketSegmentInput ? (
-                                        <input
-                                            type="text"
-                                            name="marketSegment"
-                                            id="marketSegment"
-                                            placeholder="Specify Market Segment"
-                                            value={formData.marketSegment}
-                                            onChange={handleChange}
-                                            className={inputClass}
-                                        />
-                                    ) : (
-                                        <select
-                                            name="marketSegment"
-                                            id="marketSegment"
-                                            value={formData.marketSegment}
-                                            onChange={handleChange}
-                                            className={inputClass + " appearance-none pr-8"}
-                                            disabled={marketSegmentOptions.length === 0}
-                                        >
-                                            <option value="">Select Segment</option>
-                                            {marketSegmentOptions.map(option => (
-                                                <option key={option} value={option}>{option}</option>
-                                            ))}
-                                        </select>
-                                    )}
-                                    {!showMarketSegmentInput && <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />}
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="purposeOfVisit" className={labelClass}>Purpose of Visit</label>
-                                <div className="relative">
-                                    <select name="purposeOfVisit" id="purposeOfVisit" value={formData.purposeOfVisit} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Personal">Personal</option>
-                                        <option value="Business">Business</option>
-                                        <option value="Leisure">Leisure</option>
-                                        <option value="Conference">Conference</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="discountPercent" className={labelClass}>Discount %</label>
-                                <input type="number" name="discountPercent" id="discountPercent" placeholder="e.g., 10" value={formData.discountPercent} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="discountRoomSource" className={labelClass}>Discount Room Source</label>
-                                <input type="text" name="discountRoomSource" id="discountRoomSource" placeholder="e.g., Corporate Deal" value={formData.discountRoomSource} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Payment Details */}
-                    <div>
-                        <h3 className={sectionTitleClass}><BanknotesIcon className={iconClass} />Payment Details</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="paymentMode" className={labelClass}>Payment Mode</label>
-                                <div className="relative">
-                                    <select name="paymentMode" id="paymentMode" value={formData.paymentMode} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Card">Card</option>
-                                        <option value="Online">Online</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="paymentStatus" className={labelClass}>Payment Status</label>
-                                <div className="relative">
-                                    <select name="paymentStatus" id="paymentStatus" value={formData.paymentStatus} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Paid">Paid</option>
-                                        <option value="Partial">Partially Paid</option>
-                                        <option value="Refunded">Refunded</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="bookingRefNo" className={labelClass}>Booking Ref. No.</label>
-                                <input type="text" name="bookingRefNo" id="bookingRefNo" placeholder="Booking Reference" value={formData.bookingRefNo} onChange={handleChange} className={inputClass} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Management & Special Settings */}
-                    <div>
-                        <h3 className={sectionTitleClass}><BriefcaseIcon className={iconClass} />Management & Special Settings</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className={inputGroupClass}>
-                                <label htmlFor="mgmtBlock" className={labelClass}>Management Block</label>
-                                <div className="relative">
-                                    <select name="mgmtBlock" id="mgmtBlock" value={formData.mgmtBlock} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="No">No</option>
-                                        <option value="Yes">Yes</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="billingInstruction" className={labelClass}>Billing Instruction</label>
-                                <textarea name="billingInstruction" id="billingInstruction" placeholder="Specific billing notes" value={formData.billingInstruction} onChange={handleChange} className={inputClass + " h-20 resize-y"}></textarea>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="temperature" className={labelClass}>Temperature (Celcius)</label>
-                                <input type="text" name="temperature" id="temperature" placeholder="e.g., 98.6" value={formData.temperature} onChange={handleChange} className={inputClass} />
-                            </div>
-                            <div className={inputGroupClass + " flex items-end gap-4"}>
-                              
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="vip" className={checkboxLabelClass}>
-                                    <input type="checkbox" name="vip" id="vip" checked={formData.vip} onChange={handleChange} className="form-checkbox text-blue-600 rounded" />
-                                    VIP Guest
-                                </label>
-                            </div>
-                            <div className={inputGroupClass}>
-                                <label htmlFor="status" className={labelClass}>Booking Status</label>
-                                <div className="relative">
-                                    <select name="status" id="status" value={formData.status} onChange={handleChange} className={inputClass + " appearance-none pr-8"}>
-                                        <option value="Booking">Pending</option>
-                                      
-                                        <option value="Checked in">Checked-in</option>
-                                        <option value="Checked out">Checked-out</option>
-                                        <option value="Cancelled">Cancelled</option>
-                                        <option value="No Show">No Show</option>
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="flex justify-center mt-10">
-                        <button
-                            type="submit"
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8  shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl"
-                        >
-                            Create Booking
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {/* PhotoIdUpload Modal */}
-            {showPhotoIdModal && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <PhotoIdUpload
-                        onClose={handleClosePhotoIdModal}
-                        currentFiles={uploadedFiles} // Pass current files to the modal for initial display
-                    />
-                </div>
-            )}
-        </div>
+      <div className="flex flex-col items-center p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm w-full aspect-square overflow-hidden text-center justify-center">
+        <span className="text-sm font-semibold text-gray-700 mb-1">
+          {label}
+        </span>
+        {isPdf ? (
+          <div className="text-gray-600 text-xs mt-1">
+            <DocumentTextIcon className="h-8 w-8 mx-auto mb-1 text-gray-500" />
+            {fileName.length > 15 ? fileName.substring(0, 12) + '...' : fileName}
+          </div>
+        ) : (
+          <img
+            src={url}
+            alt={`${label} Preview`}
+            className="object-contain w-full h-full rounded" // Changed from object-cover to object-contain for better fit
+            // Add onError to handle broken image links
+            onError={(e) => { 
+                e.target.src = 'https://via.placeholder.com/150?text=Image+Not+Found'; // Placeholder
+                e.target.alt = 'Image not found or failed to load';
+                e.target.onerror = null; // Prevent infinite loop if placeholder also fails
+                console.error(`Failed to load image for ${label}:`, url);
+            }}
+          />
+        )}
+      </div>
     );
+  };
+
+  const sectionTitleClass =
+    "text-xl font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2";
+  const inputGroupClass = "mb-3";
+  const labelClass = "block text-gray-700 text-sm font-semibold mb-1";
+  const inputClass =
+    "w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500 text-base";
+  const checkboxLabelClass =
+    "flex items-center gap-2 text-gray-700 font-medium text-sm";
+  const iconClass = "h-5 w-5 text-gray-500";
+
+  // Check if any file (new or existing) needs to be displayed
+  const hasAnyImageToDisplay =
+    getDisplaySource(uploadedFiles.studentAvatar, existingImageUrls.studentAvatar) ||
+    getDisplaySource(uploadedFiles.idProofFront, existingImageUrls.idProofFront) ||
+    getDisplaySource(uploadedFiles.idProofBack, existingImageUrls.idProofBack) ||
+    getDisplaySource(uploadedFiles.otherDocument, existingImageUrls.otherDocument);
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 font-inter">
+      <Toaster position="top-right" reverseOrder={false} />
+
+      <div className="max-w-7xl mx-auto px-6 py-8 bg-white shadow-lg rounded-xl w-full">
+        <h2 className="text-4xl font-extrabold text-center text-gray-900 mb-10 tracking-tight">
+          Add New Booking
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div>
+            <h3 className={sectionTitleClass}>
+              <DocumentTextIcon className={iconClass} />
+              Booking Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="grcNo" className={labelClass}>
+                  GRC No.
+                </label>
+                <input
+                  type="text"
+                  name="grcNo"
+                  id="grcNo"
+                  placeholder="GRC No"
+                  value={formData.grcNo}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="checkInDate" className={labelClass}>
+                  Check-in Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="checkInDate"
+                  id="checkInDate"
+                  value={formData.checkInDate}
+                  onChange={handleChange}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="checkOutDate" className={labelClass}>
+                  Check-out Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="checkOutDate"
+                  id="checkOutDate"
+                  value={formData.checkOutDate}
+                  onChange={handleChange}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="days" className={labelClass}>
+                  Days
+                </label>
+                <input
+                  type="number"
+                  name="days"
+                  id="days"
+                  placeholder="Days"
+                  value={formData.days}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="timeIn" className={labelClass}>
+                  Time In
+                </label>
+                <input
+                  type="time"
+                  name="timeIn"
+                  id="timeIn"
+                  placeholder="e.g., 14:00"
+                  value={formData.timeIn}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="timeOut" className={labelClass}>
+                  Time Out
+                </label>
+                <input
+                  type="time"
+                  name="timeOut"
+                  id="timeOut"
+                  placeholder="e.g., 12:00"
+                  value={formData.timeOut}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <UserIcon className={iconClass} />
+              Guest Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="salutation" className={labelClass}>
+                  Salutation
+                </label>
+                <input
+                  type="text"
+                  name="salutation"
+                  id="salutation"
+                  placeholder="Mr./Ms./Dr."
+                  value={formData.salutation}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="name" className={labelClass}>
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="age" className={labelClass}>
+                  Age
+                </label>
+                <input
+                  type="number"
+                  name="age"
+                  id="age"
+                  placeholder="Age"
+                  value={formData.age}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="gender" className={labelClass}>
+                  Gender
+                </label>
+                <div className="relative">
+                  <select
+                    name="gender"
+                    id="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass + " sm:col-span-2 lg:col-span-1"}>
+                <label htmlFor="address" className={labelClass}>
+                  Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  id="address"
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="city" className={labelClass}>
+                  City
+                </label>
+                <input
+                  type="text"
+                  name="city"
+                  id="city"
+                  placeholder="City"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="nationality" className={labelClass}>
+                  Nationality
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="nationality"
+                    id="nationality"
+                    value={formData.nationality}
+                    readOnly
+                    className={inputClass + " bg-gray-100 cursor-not-allowed"}
+                  />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="mobileNo" className={labelClass}>
+                  Mobile No.
+                </label>
+                <input
+                  type="tel"
+                  name="mobileNo"
+                  id="mobileNo"
+                  placeholder="Mobile No."
+                  value={formData.mobileNo}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="email" className={labelClass}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="phoneNo" className={labelClass}>
+                  Phone No.
+                </label>
+                <input
+                  type="tel"
+                  name="phoneNo"
+                  id="phoneNo"
+                  placeholder="Phone No."
+                  value={formData.phoneNo}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="birthDate" className={labelClass}>
+                  Birth Date
+                </label>
+                <input
+                  type="date"
+                  name="birthDate"
+                  id="birthDate"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="anniversary" className={labelClass}>
+                  Anniversary
+                </label>
+                <input
+                  type="date"
+                  name="anniversary"
+                  id="anniversary"
+                  value={formData.anniversary}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <BuildingOfficeIcon className={iconClass} />
+              Company Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="companyName" className={labelClass}>
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  id="companyName"
+                  placeholder="Company Name"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="companyGSTIN" className={labelClass}>
+                  Company GSTIN
+                </label>
+                <input
+                  type="text"
+                  name="companyGSTIN"
+                  id="companyGSTIN"
+                  placeholder="Company GSTIN"
+                  value={formData.companyGSTIN}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <IdentificationIcon className={iconClass} />
+              ID Proof & Documents
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="idProofType" className={labelClass}>
+                  ID Proof Type
+                </label>
+                <div className="relative">
+                  <select
+                    name="idProofType"
+                    id="idProofType"
+                    value={formData.idProofType}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Aadhaar Card">Aadhaar Card</option>
+                    <option value="Passport">Passport</option>
+                    <option value="Driving License">Driving License</option>
+                    <option value="Voter ID">Voter ID</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="idProofNumber" className={labelClass}>
+                  ID Proof Number
+                </label>
+                <input
+                  type="text"
+                  name="idProofNumber"
+                  id="idProofNumber"
+                  placeholder="ID Proof Number"
+                  value={formData.idProofNumber}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass + " flex items-end"}>
+                <button
+                  type="button"
+                  onClick={handleOpenPhotoIdModal}
+                  className="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <IdentificationIcon className="h-5 w-5" /> Upload Photos/IDs
+                </button>
+              </div>
+            </div>
+            <div className="mt-6">
+              {hasAnyImageToDisplay ? (
+                // Responsive grid for image previews
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {renderImageOrPdfPreview(getDisplaySource(uploadedFiles.studentAvatar, existingImageUrls.studentAvatar), "Student Photo")}
+                  {renderImageOrPdfPreview(getDisplaySource(uploadedFiles.idProofFront, existingImageUrls.idProofFront), "ID Front")}
+                  {renderImageOrPdfPreview(getDisplaySource(uploadedFiles.idProofBack, existingImageUrls.idProofBack), "ID Back")}
+                  {renderImageOrPdfPreview(getDisplaySource(uploadedFiles.otherDocument, existingImageUrls.otherDocument), "Other Doc")}
+                </div>
+              ) : (
+                <div className="mt-4 p-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-md">
+                  No photos or ID documents selected yet.
+                </div>
+              )}
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <HomeIcon className={iconClass} />
+              Room & Rate Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="roomNo" className={labelClass}>
+                  Room No.
+                </label>
+                <input
+                  type="text"
+                  name="roomNo"
+                  id="roomNo"
+                  placeholder="Room No."
+                  value={formData.roomNo}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="planPackage" className={labelClass}>
+                  Plan/Package
+                </label>
+                <input
+                  type="text"
+                  name="planPackage"
+                  id="planPackage"
+                  placeholder="Plan/Package"
+                  value={formData.planPackage}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="noOfAdults" className={labelClass}>
+                  No. of Adults
+                </label>
+                <input
+                  type="number"
+                  name="noOfAdults"
+                  id="noOfAdults"
+                  placeholder="Adults"
+                  value={formData.noOfAdults}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="noOfChildren" className={labelClass}>
+                  No. of Children
+                </label>
+                <input
+                  type="number"
+                  name="noOfChildren"
+                  id="noOfChildren"
+                  placeholder="Children"
+                  value={formData.noOfChildren}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="rate" className={labelClass}>
+                  Rate
+                </label>
+                <input
+                  type="number"
+                  name="rate"
+                  id="rate"
+                  placeholder="Rate"
+                  value={formData.rate}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass + " flex items-end gap-4"}>
+                <label htmlFor="taxIncluded" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="taxIncluded"
+                    id="taxIncluded"
+                    checked={formData.taxIncluded}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  Tax Included
+                </label>
+                <label htmlFor="serviceCharge" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="serviceCharge"
+                    id="serviceCharge"
+                    checked={formData.serviceCharge}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  Service Charge
+                </label>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="isLeader" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="isLeader"
+                    id="isLeader"
+                    checked={formData.isLeader}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  Is Leader (for group bookings)
+                </label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <GlobeAltIcon className={iconClass} />
+              Travel Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="arrivedFrom" className={labelClass}>
+                  Arrived From
+                </label>
+                <input
+                  type="text"
+                  name="arrivedFrom"
+                  id="arrivedFrom"
+                  placeholder="City/Country"
+                  value={formData.arrivedFrom}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="destination" className={labelClass}>
+                  Destination
+                </label>
+                <input
+                  type="text"
+                  name="destination"
+                  id="destination"
+                  placeholder="City/Country"
+                  value={formData.destination}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <TagIcon className={iconClass} />
+              Additional Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="remark" className={labelClass}>
+                  Remark
+                </label>
+                <textarea
+                  name="remark"
+                  id="remark"
+                  placeholder="Any special requests or notes"
+                  value={formData.remark}
+                  onChange={handleChange}
+                  className={inputClass + " h-20 resize-y"}
+                ></textarea>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="businessSource" className={labelClass}>
+                  Business Source
+                </label>
+                <div className="relative">
+                  <select
+                    name="businessSource"
+                    id="businessSource"
+                    value={formData.businessSource}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="">Select Source</option>
+                    <option value="Online OTA">Online OTA</option>
+                    <option value="Travel Agent">Travel Agent</option>
+                    <option value="Self Agent">Self Agent</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Walk-in">Walk-in</option>
+                    <option value="Direct Call">Direct Call</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Other">Other (Specify)</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="marketSegment" className={labelClass}>
+                  Market Segment
+                </label>
+                <div className="relative">
+                  {showMarketSegmentInput ? (
+                    <input
+                      type="text"
+                      name="marketSegment"
+                      id="marketSegment"
+                      placeholder="Specify Market Segment"
+                      value={formData.marketSegment}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  ) : (
+                    <select
+                      name="marketSegment"
+                      id="marketSegment"
+                      value={formData.marketSegment}
+                      onChange={handleChange}
+                      className={inputClass + " appearance-none pr-8"}
+                      disabled={marketSegmentOptions.length === 0}
+                    >
+                      <option value="">Select Segment</option>
+                      {marketSegmentOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {!showMarketSegmentInput && (
+                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  )}
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="purposeOfVisit" className={labelClass}>
+                  Purpose of Visit
+                </label>
+                <div className="relative">
+                  <select
+                    name="purposeOfVisit"
+                    id="purposeOfVisit"
+                    value={formData.purposeOfVisit}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Personal">Personal</option>
+                    <option value="Business">Business</option>
+                    <option value="Leisure">Leisure</option>
+                    <option value="Family">Family</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="discountPercent" className={labelClass}>
+                  Discount (%)
+                </label>
+                <input
+                  type="number"
+                  name="discountPercent"
+                  id="discountPercent"
+                  placeholder="e.g., 10"
+                  value={formData.discountPercent}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="discountRoomSource" className={labelClass}>
+                  Discount/Room Source
+                </label>
+                <input
+                  type="text"
+                  name="discountRoomSource"
+                  id="discountRoomSource"
+                  placeholder="Source of discount"
+                  value={formData.discountRoomSource}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="paymentMode" className={labelClass}>
+                  Payment Mode
+                </label>
+                <div className="relative">
+                  <select
+                    name="paymentMode"
+                    id="paymentMode"
+                    value={formData.paymentMode}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Net Banking">Net Banking</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="paymentStatus" className={labelClass}>
+                  Payment Status
+                </label>
+                <div className="relative">
+                  <select
+                    name="paymentStatus"
+                    id="paymentStatus"
+                    value={formData.paymentStatus}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Partial">Partially Paid</option>
+                    <option value="Failed">Failed</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="bookingRefNo" className={labelClass}>
+                  Booking Ref. No.
+                </label>
+                <input
+                  type="text"
+                  name="bookingRefNo"
+                  id="bookingRefNo"
+                  placeholder="Booking Reference Number"
+                  value={formData.bookingRefNo}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className={sectionTitleClass}>
+              <BriefcaseIcon className={iconClass} />
+              Management & Special Settings
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={inputGroupClass}>
+                <label htmlFor="mgmtBlock" className={labelClass}>
+                  Management Block
+                </label>
+                <div className="relative">
+                  <select
+                    name="mgmtBlock"
+                    id="mgmtBlock"
+                    value={formData.mgmtBlock}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="billingInstruction" className={labelClass}>
+                  Billing Instruction
+                </label>
+                <textarea
+                  name="billingInstruction"
+                  id="billingInstruction"
+                  placeholder="Specific billing notes"
+                  value={formData.billingInstruction}
+                  onChange={handleChange}
+                  className={inputClass + " h-20 resize-y"}
+                ></textarea>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="temperature" className={labelClass}>
+                  Temperature (Celcius)
+                </label>
+                <input
+                  type="text"
+                  name="temperature"
+                  id="temperature"
+                  placeholder="e.g., 98.6"
+                  value={formData.temperature}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div className={inputGroupClass + " flex items-end gap-4"}>
+                <label htmlFor="fromCSV" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="fromCSV"
+                    id="fromCSV"
+                    checked={formData.fromCSV}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  From CSV Import
+                </label>
+                <label htmlFor="epabx" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="epabx"
+                    id="epabx"
+                    checked={formData.epabx}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  EPABX Enabled
+                </label>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="vip" className={checkboxLabelClass}>
+                  <input
+                    type="checkbox"
+                    name="vip"
+                    id="vip"
+                    checked={formData.vip}
+                    onChange={handleChange}
+                    className="form-checkbox text-blue-600 rounded"
+                  />
+                  VIP Guest
+                </label>
+              </div>
+              <div className={inputGroupClass}>
+                <label htmlFor="status" className={labelClass}>
+                  Booking Status
+                </label>
+                <div className="relative">
+                  <select
+                    name="status"
+                    id="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className={inputClass + " appearance-none pr-8"}
+                  >
+                    <option value="Booked">Booked</option>
+                    <option value="Checked In">Checked-in</option>
+                    <option value="Checked Out">Checked-out</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="No Show">No Show</option>
+                  </select>
+                  <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center mt-10">
+            <button
+              type="submit"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 text-xl"
+            >
+              Create Booking
+            </button>
+          </div>
+        </form>
+      </div>
+      {showPhotoIdModal && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <PhotoIdUpload
+            onClose={handleClosePhotoIdModal}
+            currentFiles={uploadedFiles} // Pass currently new uploaded files
+            existingUrls={existingImageUrls} // Pass existing URLs to modal if it needs to display them
+          />
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default AddBookingForm;
-
-
-
