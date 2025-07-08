@@ -1774,7 +1774,7 @@ import {
 // --- Memoized Individual Form Field Components ---
 const NameInput = memo(({ value, onChange }) => (
   <div>
-    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5">
+    <label htmlFor="name" className="block text-sm font-semibold text-white mb-1.5">
       Category Name <span className="text-red-500">*</span>
     </label>
     <div className="relative">
@@ -1797,7 +1797,7 @@ const NameInput = memo(({ value, onChange }) => (
         placeholder="e.g., Deluxe Suite, Executive Room"
       />
     </div>
-    <p id="category-name-help" className="mt-2 text-xs text-gray-500">
+    <p id="category-name-help" className="mt-2 text-xs text-white">
       A unique and descriptive name for this room type.
     </p>
   </div>
@@ -1806,7 +1806,7 @@ NameInput.displayName = 'NameInput';
 
 const DescriptionInput = memo(({ value, onChange }) => (
   <div>
-    <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-1.5">
+    <label htmlFor="description" className="block text-sm font-semibold text-white mb-1.5">
       Description
     </label>
     <div className="relative">
@@ -1837,7 +1837,7 @@ DescriptionInput.displayName = 'DescriptionInput';
 
 const CapacityInput = memo(({ value, onChange }) => (
   <div>
-    <label htmlFor="capacity" className="block text-sm font-semibold text-gray-700 mb-1.5">
+    <label htmlFor="capacity" className="block text-sm font-semibold text-white mb-1.5">
       Max Capacity (Guests) <span className="text-red-500">*</span>
     </label>
     <div className="relative">
@@ -1862,7 +1862,7 @@ const CapacityInput = memo(({ value, onChange }) => (
         required
       />
     </div>
-    <p id="category-capacity-help" className="mt-2 text-xs text-gray-500">
+    <p id="category-capacity-help" className="mt-2 text-xs text-white">
       The maximum number of guests this room category can accommodate.
     </p>
   </div>
@@ -1871,7 +1871,7 @@ CapacityInput.displayName = 'CapacityInput';
 
 const NumberOfBedsInput = memo(({ value, onChange }) => (
   <div>
-    <label htmlFor="beds" className="block text-sm font-semibold text-gray-700 mb-1.5">
+    <label htmlFor="beds" className="block text-sm font-semibold text-white mb-1.5">
       Number of Beds <span className="text-red-500">*</span>
     </label>
     <div className="relative">
@@ -1896,7 +1896,7 @@ const NumberOfBedsInput = memo(({ value, onChange }) => (
         required
       />
     </div>
-    <p id="category-beds-help" className="mt-2 text-xs text-gray-500">
+    <p id="category-beds-help" className="mt-2 text-xs text-white">
       The total number of beds available in this room category.
     </p>
   </div>
@@ -1905,7 +1905,7 @@ NumberOfBedsInput.displayName = 'NumberOfBedsInput';
 
 const ImageUrlInput = memo(({ value, onChange }) => (
   <div>
-    <label htmlFor="imageUrl" className="block text-sm font-semibold text-gray-700 mb-1.5">
+    <label htmlFor="imageUrl" className="block text-sm font-semibold text-white mb-1.5">
       Main Image URL
     </label>
     <div className="relative">
@@ -2314,10 +2314,10 @@ const RoomCategoryPage = () => {
           onChange={handleInputChange}
         />
 
-        <DescriptionInput
+        {/* <DescriptionInput
           value={newCategoryData.description}
           onChange={handleInputChange}
-        />
+        /> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <CapacityInput
@@ -2381,7 +2381,7 @@ const RoomCategoryPage = () => {
         icon={AlertTriangle}
         modalWidthClass="max-w-md"
       >
-        <div className="text-gray-700 mb-6 text-center">
+        <div className="text-white mb-6 text-center">
           <p className="text-lg mb-3">
             Are you sure you want to delete the room category{' '}
             <strong className="font-semibold text-red-600">"{categoryToDelete?.name}"</strong>?
@@ -2418,7 +2418,7 @@ const RoomCategoryPage = () => {
       <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-200">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 pb-3 sm:pb-4 border-b border-gray-300">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-3 md:mb-0 flex items-center text-center md:text-left w-full justify-center md:justify-start">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 md:mb-0 flex items-center text-center md:text-left w-full justify-center md:justify-start">
             <Tag className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 text-blue-700" />
             Room Categories
           </h1>
@@ -2507,10 +2507,10 @@ const RoomCategoryPage = () => {
                 </div>
 
                 <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                  <h3 className="text-xl font-bold text-white mb-2 flex items-center">
                     <BedSingle size={20} className="mr-2 text-blue-600" /> {cat.name}
                   </h3>
-                  <p className="text-gray-700 text-sm mb-3 flex-grow">
+                  <p className="text-white text-sm mb-3 flex-grow">
                     {cat.description || <span className="text-gray-400 italic">No description provided.</span>}
                   </p>
 
@@ -2525,7 +2525,7 @@ const RoomCategoryPage = () => {
                     </span>
                   </div>
                   <div className="flex items-center text-gray-800 mb-4">
-                    <span className="flex items-center text-base font-medium text-gray-600">
+                    <span className="flex items-center text-base font-medium text-white">
                       <BedSingle size={18} className="mr-1" />
                       {cat.beds !== null ? `${cat.beds} Beds` : 'N/A'}
                     </span>
