@@ -1,295 +1,529 @@
 
-import React, { useEffect, useState } from 'react';
-// import axios from 'axios'; // Removed: No longer using axios
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { createPortal } from 'react-dom';
+import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+
+// Lucide React Icons
 import {
   Plus,
   Edit,
   Trash2,
-  Bed,
-  DoorOpen,
-  DollarSign,
-  Info,
-  X,
-  Check,
-  Loader2,
-  Image,
-  TextSelect,
   Tag,
+  X,
+  Loader2,
+  Info,
+  BadgeInfo,
+  DollarSign, // Added for Default Price
+  Users,
+  AlertTriangle,
+  BedSingle, // Added for Number of Beds
+  CalendarPlus,
+  Image,
 } from 'lucide-react';
-import { createPortal } from 'react-dom';
 
-// --- Important: No backend URL needed as API is removed ---
-// const backendURL = 'https://havana-backend.vercel.app'; // Removed
+// --- Memoized Individual Form Field Components ---
+const NameInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="name" className="block text-sm font-semibold text-white mb-1.5">
+      Category Name <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <Tag className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        value={value}
+        onChange={onChange}
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900"
+        required
+        aria-describedby="category-name-help"
+        placeholder="e.g., Deluxe Suite, Executive Room"
+      />
+    </div>
+    <p id="category-name-help" className="mt-2 text-xs text-white">
+      A unique and descriptive name for this room type.
+    </p>
+  </div>
+));
+NameInput.displayName = 'NameInput';
 
-const RoomManagementPage = () => {
-  // --- State Management ---
-  const [rooms, setRooms] = useState([]); // Room data will be managed locally
-  const [categories, setCategories] = useState([ // Dummy categories for local use
-    { id: 'cat1', name: 'Standard' },
-    { id: 'cat2', name: 'Deluxe' },
-    { id: 'cat3', name: 'Suite' },
-  ]);
-  const [newRoomData, setNewRoomData] = useState({
-    title: '',
-    room_number: '',
-    category: '', // Stores category _id
-    price: '',
+const DescriptionInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="description" className="block text-sm font-semibold text-white mb-1.5">
+      Description
+    </label>
+    <div className="relative">
+      <div className="absolute top-3 left-3 flex items-center pointer-events-none">
+        <BadgeInfo className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <textarea
+        id="description"
+        name="description"
+        value={value}
+        onChange={onChange}
+        rows="4"
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900 resize-y"
+        aria-describedby="category-description-help"
+        placeholder="e.g., A spacious room featuring a king-sized bed, city views, and a private balcony."
+      ></textarea>
+    </div>
+    <p id="category-description-help" className="mt-2 text-xs text-white">
+      Detail the amenities and unique selling points of this category.
+    </p>
+  </div>
+));
+DescriptionInput.displayName = 'DescriptionInput';
+
+const CapacityInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="capacity" className="block text-sm font-semibold text-white mb-1.5">
+      Max Capacity (Guests) <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <Users className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <input
+        type="number"
+        id="capacity"
+        name="capacity"
+        value={value}
+        onChange={onChange}
+        min="1"
+        step="1"
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900"
+        placeholder="e.g., 2"
+        aria-describedby="category-capacity-help"
+        required
+      />
+    </div>
+    <p id="category-capacity-help" className="mt-2 text-xs text-white">
+      The maximum number of guests this room category can accommodate.
+    </p>
+  </div>
+));
+CapacityInput.displayName = 'CapacityInput';
+
+const DefaultPriceInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="defaultPrice" className="block text-sm font-semibold text-white mb-1.5">
+      Default Price (₹) <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <DollarSign className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <input
+        type="number"
+        id="defaultPrice"
+        name="defaultPrice"
+        value={value}
+        onChange={onChange}
+        min="0"
+        step="0.01"
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900"
+        placeholder="e.g., 2500.00"
+        aria-describedby="category-price-help"
+        required
+      />
+    </div>
+    <p id="category-price-help" className="mt-2 text-xs text-gray-500">
+      The default price per night for this room category.
+    </p>
+  </div>
+));
+DefaultPriceInput.displayName = 'DefaultPriceInput';
+
+const NumberOfBedsInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="beds" className="block text-sm font-semibold text-white mb-1.5">
+      Number of Beds <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <BedSingle className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <input
+        type="number"
+        id="beds"
+        name="beds"
+        value={value}
+        onChange={onChange}
+        min="1"
+        step="1"
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900"
+        placeholder="e.g., 1 King, 2 Twin"
+        aria-describedby="category-beds-help"
+        required
+      />
+    </div>
+    <p id="category-beds-help" className="mt-2 text-xs text-gray-500">
+      The total number of beds available in this room category.
+    </p>
+  </div>
+));
+NumberOfBedsInput.displayName = 'NumberOfBedsInput';
+
+const ImageUrlInput = memo(({ value, onChange }) => (
+  <div>
+    <label htmlFor="imageUrl" className="block text-sm font-semibold text-white mb-1.5">
+      Main Image URL
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <Image className="h-5 w-5 text-gray-400" aria-hidden="true" />
+      </div>
+      <input
+        type="url"
+        id="imageUrl"
+        name="imageUrl"
+        value={value}
+        onChange={onChange}
+        className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm
+                   focus:outline-none focus:ring-0 focus:border-blue-500
+                   active:outline-none active:ring-0 active:border-blue-500
+                   focus-visible:outline-none focus-visible:ring-0 focus-visible:border-blue-500
+                   text-gray-900"
+        placeholder="e.g., https://example.com/room-image.jpg"
+        aria-describedby="category-image-help"
+      />
+    </div>
+    <p id="category-image-help" className="mt-2 text-xs text-gray-500">
+      URL for the primary image of this room category.
+    </p>
+  </div>
+));
+ImageUrlInput.displayName = 'ImageUrlInput';
+
+const IsActiveToggle = memo(({ checked, onChange }) => (
+  <div className="flex items-center mt-6 pt-3 border-t border-gray-200">
+    <input
+      id="isActive"
+      name="isActive"
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-md transition-colors duration-200"
+    />
+    <label htmlFor="isActive" className="ml-3 block text-base font-medium text-white cursor-pointer">
+      Category is Active
+    </label>
+  </div>
+));
+IsActiveToggle.displayName = 'IsActiveToggle';
+
+// --- Main RoomCategoryPage Component ---
+const RoomCategoryPage = () => {
+  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [guestSearchCount, setGuestSearchCount] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedCategories, setDisplayedCategories] = useState([]);
+  const [newCategoryData, setNewCategoryData] = useState({
+    name: '',
     description: '',
-    extra_bed: false,
-    is_oos: false, // Is Out Of Service
-    status: true, // true for available, false for not available (general status)
-    photos: [''], // Array of photo URLs, start with one empty input
+    capacity: '',
+    defaultPrice: '', // New field
+    beds: '', // New field
+    isActive: true,
+    imageUrl: '',
+    pictures: [],
   });
-  const [editingRoom, setEditingRoom] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
 
-  // UI state for loading indicators (mostly for simulation now)
-  const [isLoadingRooms, setIsLoadingRooms] = useState(false); // Changed to false, no API calls
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false); // Changed to false, no API calls
+  const [isLoading, setIsLoading] = useState(true);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // UI state for messages
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-
-  // UI state for modal visibility
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-  // --- Utility Functions for UI Feedback ---
-  const showSuccess = (message) => {
-    setSuccessMessage(message);
-    const timer = setTimeout(() => setSuccessMessage(null), 3000);
-    return () => clearTimeout(timer);
-  };
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [selectedCategoryForGallery, setSelectedCategoryForGallery] = useState(null);
 
-  const showError = (message) => {
-    setError(message);
-    const timer = setTimeout(() => setError(null), 5000);
-    return () => clearTimeout(timer);
-  };
+  const navigate = useNavigate();
 
-  // --- Simulate Fetching Data (no API) ---
-  useEffect(() => {
-    // In a real scenario without an API, you might load initial data from localStorage
-    // or just start with an empty array.
-    // For demonstration, we can add some dummy data
-    setRooms([
-      {
-        id: 'room1',
-        title: 'Cozy Single',
-        room_number: '101',
-        category: 'cat1',
-        price: 75.00,
-        description: 'A comfortable single room.',
-        extra_bed: false,
-        is_oos: false,
-        status: true,
-        photos: ['https://via.placeholder.com/150/0000FF/808080?text=Room+101'],
-      },
-      {
-        id: 'room2',
-        title: 'Double Deluxe',
-        room_number: '205',
-        category: 'cat2',
-        price: 120.00,
-        description: 'Spacious room with a double bed.',
-        extra_bed: true,
-        is_oos: false,
-        status: true,
-        photos: ['https://via.placeholder.com/150/FF0000/FFFFFF?text=Room+205'],
-      },
-      {
-        id: 'room3',
-        title: 'Executive Suite',
-        room_number: '301',
-        category: 'cat3',
-        price: 250.00,
-        description: 'Luxurious suite with city views.',
-        extra_bed: false,
-        is_oos: true, // Out of Service
-        status: false,
-        photos: ['https://via.placeholder.com/150/00FF00/000000?text=Room+301'],
-      },
-    ]);
-    // Categories are already hardcoded
+  const ITEMS_PER_PAGE = 8;
+  const API_BASE_URL = 'https://havana-backend.vercel.app/api/room-categories';
+
+  const fetchCategoriesData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_BASE_URL);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
+      }
+      const data = await response.json();
+
+      let processedCategories = [];
+      if (data && Array.isArray(data.categories)) {
+        processedCategories = data.categories.map(cat => ({
+          _id: cat._id,
+          name: cat.category,
+          isActive: cat.status === 'Active',
+          description: cat.description || '',
+          defaultPrice: typeof cat.defaultPrice === 'number' ? cat.defaultPrice : '', // Ensure it's a string for input value
+          capacity: cat.capacity || '', // Ensure it's a string for input value
+          beds: cat.beds || '', // New field, ensure it's a string
+          imageUrl: cat.imageUrl || `https://placehold.co/400x250/F0F0F0/666666?text=${cat.category.replace(/\s/g, '+')}`,
+          pictures: Array.isArray(cat.pictures) ? cat.pictures : [],
+        }));
+      } else {
+        console.warn("API response for room categories did not contain a 'categories' array. Received:", data);
+        processedCategories = [];
+      }
+
+      setCategories(processedCategories);
+      toast.success('Room categories loaded successfully!');
+    } catch (error) {
+      console.error('Failed to fetch room categories:', error);
+      toast.error(`Failed to load room categories: ${error.message}. Please check console.`);
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // --- Handle Form Input Change ---
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    fetchCategoriesData();
+  }, [fetchCategoriesData]);
+
+  useEffect(() => {
+    const filtered = Array.isArray(categories)
+      ? categories.filter((cat) => {
+          const matchesSearchTerm =
+            (cat.name || '').toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+            (cat.description || '').toLowerCase().includes(searchTerm.toLowerCase().trim());
+
+          const guestCountNum = parseInt(guestSearchCount, 10);
+          const matchesGuestCount =
+            isNaN(guestCountNum) || guestCountNum <= 0 || (cat.capacity && cat.capacity >= guestCountNum);
+
+          return matchesSearchTerm && matchesGuestCount;
+        })
+      : [];
+
+    setDisplayedCategories(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, guestSearchCount, categories]);
+
+  const totalPages = Math.ceil(displayedCategories.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentCategories = displayedCategories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
-    setNewRoomData((prevData) => ({
+    setNewCategoryData(prevData => ({
       ...prevData,
       [name]: type === 'checkbox' ? checked : value,
     }));
-  };
+  }, []);
 
-  // Handle changes to individual photo URL inputs
-  const handlePhotoUrlChange = (index, e) => {
-    const newPhotos = [...newRoomData.photos];
-    newPhotos[index] = e.target.value;
-    setNewRoomData((prevData) => ({
-      ...prevData,
-      photos: newPhotos,
-    }));
-  };
+  const resetFormData = useCallback(() => {
+    setNewCategoryData({
+      name: '',
+      description: '',
+      capacity: '',
+      defaultPrice: '',
+      beds: '',
+      isActive: true,
+      imageUrl: '',
+      pictures: [],
+    });
+  }, []);
 
-  // Add a new photo URL input field
-  const addPhotoInput = () => {
-    setNewRoomData((prevData) => ({
-      ...prevData,
-      photos: [...prevData.photos, ''],
-    }));
-  };
-
-  // Remove a photo URL input field
-  const removePhotoInput = (index) => {
-    setNewRoomData((prevData) => ({
-      ...prevData,
-      photos: prevData.photos.filter((_, i) => i !== index),
-    }));
-  };
-
-
-  // --- Handle Save (Add/Edit) Room to Local State ---
-  const handleSaveRoom = async (e) => {
+  // --- Handle Save (Add/Edit) Category - API INTEGRATED ---
+  const handleSaveCategory = useCallback(async (e) => {
     e.preventDefault();
-    setError(null);
+    toast.dismiss();
+
+    if (!newCategoryData.name.trim()) {
+      toast.error('Category name cannot be empty.');
+      return;
+    }
+    const isDuplicate = categories.some(
+      (cat) =>
+        cat.name.toLowerCase() === newCategoryData.name.trim().toLowerCase() &&
+        (editingCategory ? cat._id !== editingCategory._id : true)
+    );
+    if (isDuplicate) {
+      toast.error('A category with this name already exists.');
+      return;
+    }
+
+    if (newCategoryData.capacity && (!Number.isInteger(Number(newCategoryData.capacity)) || Number(newCategoryData.capacity) <= 0)) {
+      toast.error('Capacity must be a positive whole number.');
+      return;
+    }
+    if (newCategoryData.defaultPrice === '' || Number(newCategoryData.defaultPrice) < 0) {
+      toast.error('Default Price cannot be empty and must be a non-negative number.');
+      return;
+    }
+    if (newCategoryData.beds === '' || !Number.isInteger(Number(newCategoryData.beds)) || Number(newCategoryData.beds) <= 0) {
+      toast.error('Number of Beds cannot be empty and must be a positive whole number.');
+      return;
+    }
+
     setIsFormSubmitting(true);
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate async operation
-
-    // Client-side validation
-    if (!newRoomData.title.trim() || !newRoomData.room_number.trim() || !newRoomData.category.trim() || !newRoomData.price) {
-      showError('Please fill in all required fields (Title, Room Number, Category, Price).');
-      setIsFormSubmitting(false);
-      return;
-    }
-    if (isNaN(parseFloat(newRoomData.price)) || parseFloat(newRoomData.price) <= 0) {
-      showError('Price must be a positive number.');
-      setIsFormSubmitting(false);
-      return;
-    }
-    // Filter out empty photo URLs before sending
-    const validPhotos = newRoomData.photos.filter(url => url.trim() !== '');
-
     try {
-      const roomPayload = {
-        title: newRoomData.title.trim(),
-        room_number: newRoomData.room_number.trim(),
-        category: newRoomData.category,
-        price: parseFloat(newRoomData.price),
-        description: newRoomData.description.trim(),
-        extra_bed: newRoomData.extra_bed,
-        is_oos: newRoomData.is_oos,
-        status: newRoomData.status,
-        photos: validPhotos,
+      const categoryPayload = {
+        category: newCategoryData.name.trim(),
+        status: newCategoryData.isActive ? 'Active' : 'Inactive',
+        description: newCategoryData.description.trim(),
+        capacity: newCategoryData.capacity ? parseInt(newCategoryData.capacity, 10) : 1,
+        defaultPrice: newCategoryData.defaultPrice ? parseFloat(newCategoryData.defaultPrice) : 0, // New field
+        beds: newCategoryData.beds ? parseInt(newCategoryData.beds, 10) : 1, // New field
+        imageUrl: newCategoryData.imageUrl,
+        pictures: newCategoryData.pictures
       };
 
-      if (editingRoom) {
-        // Update existing room in local state
-        setRooms(prevRooms => prevRooms.map(room =>
-          room.id === editingRoom.id ? { ...roomPayload, id: room.id } : room
-        ));
-        showSuccess('Room updated successfully!');
+      let response;
+      if (editingCategory) {
+        response = await fetch(`${API_BASE_URL}/${editingCategory._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(categoryPayload),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to update category: ${response.statusText}`);
+        }
+        toast.success('Room category updated successfully!');
       } else {
-        // Add new room to local state
-        const newId = `room${Date.now()}`; // Generate a unique ID
-        setRooms(prevRooms => [...prevRooms, { ...roomPayload, id: newId }]);
-        showSuccess('Room added successfully!');
+        response = await fetch(API_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(categoryPayload),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to add category: ${response.statusText}`);
+        }
+        toast.success('Room category added successfully!');
       }
 
+      await fetchCategoriesData();
       closeAddEditModal();
-    } catch (err) {
-      // This catch block is mostly for client-side errors now, as there's no network
-      console.error('Failed to save room:', err);
-      showError('An error occurred while saving the room.');
+    } catch (error) {
+      console.error('Error saving room category:', error);
+      toast.error(`Error saving category: ${error.message}`);
     } finally {
       setIsFormSubmitting(false);
     }
-  };
+  }, [newCategoryData, categories, editingCategory, fetchCategoriesData]);
 
-  // --- Handle Edit Button Click ---
-  const handleEditClick = (room) => {
-    setEditingRoom(room);
-    setNewRoomData({
-      title: room.title || '',
-      room_number: room.room_number || '',
-      category: room.category || '',
-      price: room.price !== null ? String(room.price) : '',
-      description: room.description || '',
-      extra_bed: room.extra_bed || false,
-      is_oos: room.is_oos || false,
-      status: room.status,
-      photos: room.photos && room.photos.length > 0 ? room.photos : [''],
+  const handleEditClick = useCallback((category) => {
+    setNewCategoryData({
+      name: category.name || '',
+      description: category.description || '',
+      capacity: category.capacity || '',
+      defaultPrice: category.defaultPrice !== undefined ? category.defaultPrice : '', // Handle undefined
+      beds: category.beds !== undefined ? category.beds : '', // Handle undefined
+      isActive: category.isActive,
+      imageUrl: category.imageUrl || '',
+      pictures: category.pictures || [],
     });
+    setEditingCategory(category);
     setIsAddEditModalOpen(true);
-    setError(null);
-  };
+    toast.dismiss();
+  }, []);
 
-  // --- Handle Delete Button Click ---
-  const handleDeleteClick = (room) => {
-    setRoomToDelete(room);
+  const handleDeleteClick = useCallback((category) => {
+    setCategoryToDelete(category);
     setIsDeleteConfirmModalOpen(true);
-    setError(null);
-  };
+    toast.dismiss();
+  }, []);
 
-  // --- Confirm Delete Room from Local State ---
-  const confirmDeleteRoom = async () => {
-    if (!roomToDelete) return;
+  const confirmDeleteCategory = useCallback(async () => {
+    if (!categoryToDelete) return;
+
     setIsDeleting(true);
-    setError(null);
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate async operation
+    toast.dismiss();
 
     try {
-      setRooms(prevRooms => prevRooms.filter(room => room.id !== roomToDelete.id));
-      showSuccess(`Room "${roomToDelete.title} - ${roomToDelete.room_number}" deleted successfully!`);
+      const response = await fetch(`${API_BASE_URL}/${categoryToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete category: ${response.statusText}`);
+      }
+
+      toast.success(`Category "${categoryToDelete.name}" deleted successfully!`);
+      await fetchCategoriesData();
       closeDeleteConfirmModal();
-    } catch (err) {
-      console.error('Failed to delete room:', err);
-      showError('An error occurred while deleting the room.');
+    } catch (error) {
+      console.error('Error deleting room category:', error);
+      toast.error(`Error deleting category: ${error.message}`);
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [categoryToDelete, fetchCategoriesData]);
 
-  // --- Modal Close Handlers ---
-  const closeAddEditModal = () => {
+  const handleBookNowClick = useCallback((categoryName) => {
+    toast.success(`Navigating to booking page for ${categoryName}!`);
+    navigate('/booking/add');
+  }, [navigate]);
+
+  const handlePicturesClick = useCallback((category) => {
+    setSelectedCategoryForGallery(category);
+    setIsGalleryModalOpen(true);
+  }, []);
+
+  const closeAddEditModal = useCallback(() => {
     setIsAddEditModalOpen(false);
-    setNewRoomData({
-      title: '',
-      room_number: '',
-      category: '',
-      price: '',
-      description: '',
-      extra_bed: false,
-      is_oos: false,
-      status: true,
-      photos: [''],
-    });
-    setEditingRoom(null);
-    setError(null);
+    resetFormData(); // Reset form data when modal is closed
+    setEditingCategory(null);
     setIsFormSubmitting(false);
-  };
+    toast.dismiss();
+  }, [resetFormData]);
 
-  const closeDeleteConfirmModal = () => {
+  const closeDeleteConfirmModal = useCallback(() => {
     setIsDeleteConfirmModalOpen(false);
-    setRoomToDelete(null);
-    setError(null);
+    setCategoryToDelete(null);
     setIsDeleting(false);
-  };
+    toast.dismiss();
+  }, []);
 
-  // --- Reusable Modal Component (using createPortal) ---
-  const Modal = ({ isOpen, onClose, title, children }) => {
+  const closeGalleryModal = useCallback(() => {
+    setIsGalleryModalOpen(false);
+    setSelectedCategoryForGallery(null);
+  }, []);
+
+  const MemoizedModal = memo(({ isOpen, onClose, title, children, icon: IconComponent, modalWidthClass = 'max-w-md' }) => {
     if (!isOpen) return null;
 
     return createPortal(
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fade-in overflow-y-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-auto p-6 relative transform transition-all duration-300 scale-100 opacity-100 animate-slide-up my-8">
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-3 sm:p-4">
+        <div className={`bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full ${modalWidthClass} border-t-4 border-blue-500`}>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -297,431 +531,378 @@ const RoomManagementPage = () => {
           >
             <X size={24} />
           </button>
-          <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{title}</h3>
+          <div className="flex flex-col items-center mb-4 sm:mb-6">
+            {IconComponent && <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mb-2 sm:mb-3" />}
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1.5 mt-1.5 sm:mb-2 sm:mt-2 text-center">{title}</h3>
+          </div>
           {children}
         </div>
       </div>,
       document.body
     );
-  };
+  });
+  MemoizedModal.displayName = 'MemoizedModal';
 
-  // Helper to find category name by ID
-  const getCategoryNameById = (categoryId) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unknown Category';
-  };
+  const ImageGalleryModal = memo(({ isOpen, onClose, category }) => {
+    if (!isOpen || !category) return null;
+
+    return createPortal(
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 p-3 sm:p-4">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl border-t-4 border-purple-500">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="Close gallery modal"
+          >
+            <X size={24} />
+          </button>
+          <div className="flex flex-col items-center mb-4 sm:mb-6">
+            <Image className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600 mb-2 sm:mb-3" />
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1.5 mt-1.5 sm:mb-2 sm:mt-2 text-center">
+              Pictures for {category.name}
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            {category.pictures && category.pictures.length > 0 ? (
+              category.pictures.map((pic, index) => (
+                <div key={index} className="relative w-full pb-[75%] rounded-lg overflow-hidden shadow-md group">
+                  <img
+                    src={pic}
+                    alt={`${category.name} - ${index + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x300/E0E0E0/616161?text=Image+Not+Found"; }}
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      View
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-6">
+                <Info className="inline-block h-5 w-5 mr-1 text-gray-400" /> No pictures available for this category.
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={onClose}
+              className="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  });
+  ImageGalleryModal.displayName = 'ImageGalleryModal';
+
+  // The form content, composed of memoized sub-components.
+  const AddEditCategoryFormContent = useMemo(() => {
+    return (
+      <form onSubmit={handleSaveCategory} className="space-y-5">
+        <NameInput
+          value={newCategoryData.name}
+          onChange={handleInputChange}
+        />
+
+        <DescriptionInput
+          value={newCategoryData.description}
+          onChange={handleInputChange}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <CapacityInput
+            value={newCategoryData.capacity}
+            onChange={handleInputChange}
+          />
+          <DefaultPriceInput
+            value={newCategoryData.defaultPrice}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <NumberOfBedsInput
+          value={newCategoryData.beds}
+          onChange={handleInputChange}
+        />
+
+        <ImageUrlInput
+          value={newCategoryData.imageUrl}
+          onChange={handleInputChange}
+        />
+
+        <IsActiveToggle
+          checked={newCategoryData.isActive}
+          onChange={handleInputChange}
+        />
+
+        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={closeAddEditModal}
+            className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-semibold
+                         hover:bg-gray-100 transition-colors duration-200 shadow-sm
+                         focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75"
+            disabled={isFormSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-blue-800 text-white rounded-lg font-semibold
+                         hover:bg-blue-900 transition-all duration-200 flex items-center justify-center gap-2
+                         disabled:opacity-50 disabled:cursor-not-allowed shadow-md
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transform hover:scale-[1.02]"
+            disabled={isFormSubmitting}
+          >
+            {isFormSubmitting && <Loader2 size={20} className="animate-spin" />}
+            {editingCategory ? 'Update Category' : 'Add Category'}
+          </button>
+        </div>
+      </form>
+    );
+  }, [newCategoryData, handleInputChange, handleSaveCategory, closeAddEditModal, editingCategory, isFormSubmitting]);
+
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-3 sm:p-8 font-sans bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-2xl rounded-2xl border border-gray-200 min-h-[calc(100vh-5rem)] flex flex-col">
-      <h2 className="text-3xl font-bold mb-6 flex items-center gap-3 text-indigo-700 dark:text-indigo-400">
-        <Bed className="h-8 w-8 text-indigo-500" /> Room Management
-      </h2>
-
-      <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-        Manage individual rooms, their details, status, and associated categories (local data simulation).
-      </p>
-
-      {/* Global Success/Error Messages */}
-      {successMessage && (
-        <div className="bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg flex items-center mb-4 transition-opacity duration-300 opacity-100 shadow-md border border-green-300">
-          <Check size={20} className="mr-2 flex-shrink-0" /> {successMessage}
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-100 px-4 py-3 rounded-lg flex items-center mb-4 transition-opacity duration-300 opacity-100 shadow-md border border-red-300">
-          <Info size={20} className="mr-2 flex-shrink-0" /> {error}
-        </div>
-      )}
-
-      {/* Add New Room Button */}
-      <div className="mb-6 flex justify-end">
-        <button
-          onClick={() => {
-            setEditingRoom(null);
-            setNewRoomData({
-              title: '',
-              room_number: '',
-              category: '',
-              price: '',
-              description: '',
-              extra_bed: false,
-              is_oos: false,
-              status: true,
-              photos: [''],
-            });
-            setIsAddEditModalOpen(true);
-            setError(null);
-          }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 flex items-center gap-2"
-          aria-label="Add New Room"
-        >
-          <Plus size={24} /> Add New Room
-        </button>
-      </div>
-
-      {/* Loading, Empty, or Rooms Table */}
-      {isLoadingRooms || isLoadingCategories ? ( // These will always be false now
-        <div className="flex justify-center items-center py-10 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-inner">
-          <Loader2 className="animate-spin h-10 w-10 text-indigo-500" />
-          <span className="ml-3 text-lg text-gray-700 dark:text-gray-300">Loading rooms and categories...</span>
-        </div>
-      ) : rooms.length === 0 ? (
-        <div className="text-center text-gray-500 py-10 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-inner">
-          <Info className="inline-block h-6 w-6 mr-2 text-gray-400" /> No rooms found. Click "Add New Room" to get started.
-        </div>
-      ) : (
-        <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-          <table className="min-w-full table-auto">
-            <thead className="bg-gray-200 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Room Number</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Title</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 hidden md:table-cell">Category</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 hidden lg:table-cell">Price</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 hidden sm:table-cell">Status</th>
-                <th className="px-6 py-3 text-right font-semibold text-gray-700 dark:text-gray-200">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {rooms.map((room, index) => (
-                <tr
-                  key={room.id}
-                  className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150`}
-                >
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{room.room_number}</td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{room.title}</td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300 hidden md:table-cell text-sm">
-                    {getCategoryNameById(room.category)}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-gray-300 hidden lg:table-cell text-sm">
-                    <span className="font-semibold text-green-700 dark:text-green-300">
-                      ${room.price.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 hidden sm:table-cell">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                      ${room.status && !room.is_oos ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' :
-                        room.is_oos ? 'bg-orange-100 text-orange-800 dark:bg-orange-700 dark:text-orange-100' :
-                        'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100'}`}>
-                      {room.is_oos ? 'Out of Service' : (room.status ? 'Available' : 'Unavailable')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                    <button
-                      onClick={() => handleEditClick(room)}
-                      className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-                      title={`Edit ${room.title}`}
-                      aria-label={`Edit ${room.title}`}
-                    >
-                      <Edit size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(room)}
-                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-                      title={`Delete ${room.title}`}
-                      aria-label={`Delete ${room.title}`}
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Add/Edit Room Modal */}
-      <Modal
-        isOpen={isAddEditModalOpen}
-        onClose={closeAddEditModal}
-        title={editingRoom ? 'Edit Room' : 'Add New Room'}
-      >
-        <form onSubmit={handleSaveRoom} className="space-y-4">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 dark:bg-red-900 dark:border-red-700 dark:text-red-300">
-              <strong className="font-bold">Validation Error!</strong>
-              <span className="block sm:inline ml-2">{error}</span>
-            </div>
-          )}
-
-          {/* Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Room Title <span className="text-red-500">*</span>
-            </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Bed className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={newRoomData.title}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                required
-                placeholder="e.g., Deluxe King"
-              />
-            </div>
-          </div>
-
-          {/* Room Number */}
-          <div>
-            <label htmlFor="room_number" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Room Number <span className="text-red-500">*</span>
-            </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <DoorOpen className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="room_number"
-                name="room_number"
-                value={newRoomData.room_number}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                required
-                placeholder="e.g., 101"
-              />
-            </div>
-          </div>
-
-          {/* Category */}
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Tag className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <select
-                id="category"
-                name="category"
-                value={newRoomData.category}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                required
-                disabled={isLoadingCategories}
-              >
-                <option value="">{isLoadingCategories ? 'Loading categories...' : 'Select a category'}</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Price */}
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Price (per night) <span className="text-red-500">*</span>
-            </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <DollarSign className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={newRoomData.price}
-                onChange={handleInputChange}
-                step="0.01"
-                min="0"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                required
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Description
-            </label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <TextSelect className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <textarea
-                id="description"
-                name="description"
-                value={newRoomData.description}
-                onChange={handleInputChange}
-                rows="3"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Brief description of the room..."
-              ></textarea>
-            </div>
-          </div>
-
-          {/* Checkboxes */}
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center">
-              <input
-                id="extra_bed"
-                name="extra_bed"
-                type="checkbox"
-                checked={newRoomData.extra_bed}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label htmlFor="extra_bed" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">
-                Extra Bed
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="is_oos"
-                name="is_oos"
-                type="checkbox"
-                checked={newRoomData.is_oos}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label htmlFor="is_oos" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">
-                Out of Service
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="status"
-                name="status"
-                type="checkbox"
-                checked={newRoomData.status}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label htmlFor="status" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">
-                Active (Available)
-              </label>
-            </div>
-          </div>
-
-          {/* Photos */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Photos (URLs)
-            </label>
-            {newRoomData.photos.map((photoUrl, index) => (
-              <div key={index} className="flex items-center mt-2">
-                <div className="relative flex-grow rounded-md shadow-sm">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Image className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                  </div>
-                  <input
-                    type="url"
-                    value={photoUrl}
-                    onChange={(e) => handlePhotoUrlChange(index, e)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="https://example.com/room-photo.jpg"
-                  />
-                </div>
-                {newRoomData.photos.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removePhotoInput(index)}
-                    className="ml-2 text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <X size={20} />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addPhotoInput}
-              className="mt-3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-1"
-            >
-              <Plus size={16} /> Add Another Photo URL
-            </button>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={closeAddEditModal}
-              className="px-5 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-              disabled={isFormSubmitting}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-              disabled={isFormSubmitting}
-            >
-              {isFormSubmitting && <Loader2 size={20} className="animate-spin" />}
-              {editingRoom ? 'Update Room' : 'Add Room'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-2 sm:p-3 md:p-6 font-sans text-gray-800">
+      <Toaster position="top-right" reverseOrder={false} />
 
       {/* Delete Confirmation Modal */}
-      <Modal
+      <MemoizedModal
         isOpen={isDeleteConfirmModalOpen}
         onClose={closeDeleteConfirmModal}
         title="Confirm Deletion"
+        icon={AlertTriangle}
+        modalWidthClass="max-w-md"
       >
-        <div className="text-gray-700 dark:text-gray-300 mb-6 text-center">
+        <div className="text-gray-700 mb-6 text-center">
           <p className="text-lg mb-3">
-            Are you sure you want to delete room{' '}
-            <strong className="font-semibold text-red-600 dark:text-red-400">"{roomToDelete?.title} - {roomToDelete?.room_number}"</strong>?
+            Are you sure you want to delete the room category{' '}
+            <strong className="font-semibold text-red-600">"{categoryToDelete?.name}"</strong>?
           </p>
           <p className="text-sm">
-            This action cannot be undone.
+            This action cannot be undone and may affect existing rooms assigned to this category.
           </p>
         </div>
-        <div className="flex justify-center space-x-3 mt-6">
+        <div className="flex justify-center space-x-3 sm:space-x-4 mt-6">
           <button
-            type="button"
             onClick={closeDeleteConfirmModal}
-            className="px-5 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="flex items-center px-4 py-2 bg-gray-300 text-white font-semibold rounded-lg shadow-sm hover:bg-gray-400 transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
             disabled={isDeleting}
           >
             Cancel
           </button>
           <button
-            type="button"
-            onClick={confirmDeleteRoom}
-            className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+            onClick={confirmDeleteCategory}
+            className="flex items-center px-4 py-2 bg-red-700 text-white font-semibold rounded-lg shadow-md hover:bg-red-800 transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
             disabled={isDeleting}
           >
-            {isDeleting && <Loader2 size={20} className="animate-spin" />}
-            Delete
+            {isDeleting && <Loader2 size={20} className="animate-spin mr-2" />} Delete
           </button>
         </div>
-      </Modal>
+      </MemoizedModal>
 
-      {/* Basic Tailwind CSS keyframes for animations (place in your main CSS file if preferred) */}
-      <style>
-        {`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.2s ease-out forwards;
-        }
-        .animate-slide-up {
-          animation: slideUp 0.3s ease-out forwards;
-        }
-        `}
-      </style>
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        isOpen={isGalleryModalOpen}
+        onClose={closeGalleryModal}
+        category={selectedCategoryForGallery}
+      />
+
+      <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-200">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 pb-3 sm:pb-4 border-b border-gray-300">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 md:mb-0 flex items-center text-center md:text-left w-full justify-center md:justify-start">
+            <Tag className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 text-blue-700" />
+            Room Categories
+          </h1>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+            <button
+              onClick={() => {
+                setEditingCategory(null);
+                resetFormData(); // Reset data for new category
+                setIsAddEditModalOpen(true);
+                toast.dismiss();
+              }}
+              className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:bg-blue-900 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 text-sm sm:text-base"
+              title="Add a new room category"
+            >
+              <Plus size={20} className="mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Add New Category</span> <span className="sm:hidden">Add Category</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Search Bars */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 sm:mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by category name or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2.5 text-base text-white placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out shadow-sm text-sm sm:text-base"
+              title="Search for room categories by name or description"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <Tag size={16} className="text-gray-500" />
+            </div>
+          </div>
+
+          <div className="relative">
+            <input
+              type="number"
+              placeholder="Search by guests capacity..."
+              value={guestSearchCount}
+              onChange={(e) => setGuestSearchCount(e.target.value)}
+              min="0"
+              className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2.5 text-base text-white placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out shadow-sm text-sm sm:text-base"
+              title="Search for room categories by maximum guest capacity"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <Users size={16} className="text-gray-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Loading Spinner / Categories Display */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-10 sm:py-16">
+            <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-t-4 border-b-4 border-blue-700 mb-3 sm:mb-4"></div>
+            <p className="text-base sm:text-xl text-blue-800 font-medium">Fetching room categories...</p>
+          </div>
+        ) : displayedCategories.length === 0 && (searchTerm === '' && guestSearchCount === '') ? (
+          <div className="text-center text-gray-500 py-10 bg-gray-50 rounded-lg shadow-inner">
+            <Info className="inline-block h-6 w-6 mr-2 text-gray-400" /> No room categories found. Click "Add New Category" to get started.
+          </div>
+        ) : displayedCategories.length === 0 && (searchTerm !== '' || guestSearchCount !== '') ? (
+          <div className="text-center text-gray-500 py-10 bg-gray-50 rounded-lg shadow-inner">
+            <Info className="inline-block h-6 w-6 mr-2 text-gray-400" /> No room categories found for your search criteria.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {currentCategories.map((cat) => (
+              <div
+                key={cat._id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 transform transition-transform duration-200 hover:scale-103 hover:shadow-xl flex flex-col"
+              >
+                <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+                  <img
+                    src={cat.imageUrl}
+                    alt={cat.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x250/E0E0E0/616161?text=Room+Image"; }}
+                  />
+                  <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold
+                    ${cat.isActive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'} shadow-md`}>
+                    {cat.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center">
+                    <BedSingle size={20} className="mr-2 text-blue-600" /> {cat.name}
+                  </h3>
+                  <p className="text-gray-700 text-sm mb-3 flex-grow">
+                    {cat.description || <span className="text-gray-400 italic">No description provided.</span>}
+                  </p>
+
+                  <div className="flex items-center justify-between text-gray-800 mb-4">
+                    <span className="flex items-center text-lg font-semibold text-green-700">
+                      <DollarSign size={18} className="mr-1" />
+                      ₹{typeof cat.defaultPrice === 'number' ? cat.defaultPrice.toFixed(2) : 'N/A'}
+                    </span>
+                    <span className="flex items-center text-lg font-semibold text-blue-800">
+                      <Users size={18} className="mr-1" />
+                      {cat.capacity !== null ? `${cat.capacity} Guests` : 'N/A'}
+                    </span>
+                  </div>
+                  {/* New: Display Number of Beds */}
+                  <div className="flex items-center text-gray-800 mb-4">
+                    <span className="flex items-center text-base font-medium text-gray-600">
+                      <BedSingle size={18} className="mr-1" />
+                      {cat.beds !== null ? `${cat.beds} Beds` : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-auto">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleBookNowClick(cat.name)}
+                        className="flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
+                        title={`Book ${cat.name}`}
+                      >
+                        <CalendarPlus size={16} className="mr-1" /> Book
+                      </button>
+                      <button
+                        onClick={() => handlePicturesClick(cat)}
+                        className="flex items-center justify-center px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
+                        title={`View pictures for ${cat.name}`}
+                      >
+                        <Image size={16} className="mr-1" /> Pictures
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleEditClick(cat)}
+                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
+                        title={`Edit ${cat.name}`}
+                      >
+                        <Edit size={16} className="mr-1" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(cat)}
+                        className="flex items-center justify-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
+                        title={`Delete ${cat.name}`}
+                      >
+                        <Trash2 size={16} className="mr-1" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 flex-wrap gap-1.5 sm:gap-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`mx-0.5 my-0.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md border-2 text-sm font-semibold transition duration-200 ease-in-out
+                  ${currentPage === i + 1
+                    ? "bg-blue-800 text-white border-blue-800 shadow-md transform scale-105"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+                  }
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 text-xs sm:text-base`}
+                title={`Go to page ${i + 1}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <MemoizedModal
+        isOpen={isAddEditModalOpen}
+        onClose={closeAddEditModal}
+        title={editingCategory ? 'Edit Room Category' : 'Add New Room Category'}
+        icon={editingCategory ? Edit : Plus}
+        modalWidthClass="max-w-xl md:max-w-2xl"
+      >
+        {AddEditCategoryFormContent}
+      </MemoizedModal>
     </div>
   );
 };
 
-export default RoomManagementPage;
+export default RoomCategoryPage;
