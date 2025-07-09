@@ -62,7 +62,8 @@ const Booking = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [bookingToDeleteId, setBookingToDeleteId] = useState(null);
   const navigate = useNavigate();
-
+ 
+  
   const fetchBookingsData = useCallback(async () => {
     setLoading(true);
     try {
@@ -77,11 +78,12 @@ const Booking = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [ ]);
 
   useEffect(() => {
     fetchBookingsData();
   }, [fetchBookingsData]);
+
 
   useEffect(() => {
     const filtered = bookings.filter((b) =>
@@ -130,9 +132,9 @@ const Booking = () => {
   const handleEdit = (booking) => {
     console.log("Attempting to navigate to edit page for booking:", booking);
     if (!booking || !booking._id) {
-        console.error("Booking object or _id is missing, cannot navigate to edit page.", booking);
-        toast.error("Cannot edit: Booking ID is missing.");
-        return;
+      console.error("Booking object or _id is missing, cannot navigate to edit page.", booking);
+      toast.error("Cannot edit: Booking ID is missing.");
+      return;
     }
     const navigatePath = `/booking/edit/${booking._id}`;
     console.log("Navigating to:", navigatePath);
@@ -145,9 +147,9 @@ const Booking = () => {
   const handleView = (booking) => {
     console.log("Attempting to navigate to view page for booking:", booking);
     if (!booking || !booking._id) {
-        console.error("Booking object or _id is missing, cannot navigate to view page.", booking);
-        toast.error("Cannot view: Booking ID is missing.");
-        return;
+      console.error("Booking object or _id is missing, cannot navigate to view page.", booking);
+      toast.error("Cannot view: Booking ID is missing.");
+      return;
     }
     const navigatePath = `/booking/view/${booking._id}`;
     console.log("Navigating to:", navigatePath);

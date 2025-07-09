@@ -61,6 +61,7 @@ const RoomCategoryPage = () => {
     description: '',
     capacity: '',
     beds: '',
+    defaultPrice: '',
     isActive: true,
     imageUrl: '',
     pictures: [],
@@ -177,8 +178,9 @@ const RoomCategoryPage = () => {
     setNewCategoryData({
       name: '',
       description: '',
-      capacity: '', // Will default to 0 if not set in API
-      beds: '',     // Will default to 0 if not set in API
+      capacity: '',
+      beds: '',
+      defaultPrice: '',
       isActive: true,
       imageUrl: '',
       pictures: [],
@@ -215,19 +217,26 @@ const RoomCategoryPage = () => {
       toast.error('Number of Beds must be a positive whole number.');
       return;
     }
+    // Price validation: Ensure it's a positive number (allow decimals)
+    let priceNum = 0;
+    if (newCategoryData.defaultPrice !== undefined && newCategoryData.defaultPrice !== null && newCategoryData.defaultPrice !== '') {
+      priceNum = parseFloat(newCategoryData.defaultPrice);
+      if (isNaN(priceNum) || priceNum < 0) priceNum = 0;
+    }
 
     setIsFormSubmitting(true);
     try {
+      // Always send JSON, with imageUrl as base64 string (if present)
       const categoryPayload = {
         category: newCategoryData.name.trim(),
         status: newCategoryData.isActive ? 'Active' : 'Inactive',
         description: newCategoryData.description.trim(),
         capacity: capacityNum,
         beds: bedsNum,
+        defaultPrice: priceNum,
         imageUrl: newCategoryData.imageUrl,
         pictures: newCategoryData.pictures
       };
-
       let response;
       if (editingCategory) {
         response = await fetch(`${API_BASE_URL}/${editingCategory._id}`, {
@@ -271,8 +280,9 @@ const RoomCategoryPage = () => {
     setNewCategoryData({
       name: category.name || '',
       description: category.description || '',
-      capacity: category.capacity !== undefined && category.capacity !== null ? String(category.capacity) : '',
-      beds: category.beds !== undefined && category.beds !== null ? String(category.beds) : '',
+      capacity: (category.capacity !== undefined && category.capacity !== null && category.capacity !== '') ? String(category.capacity) : '1',
+      beds: (category.beds !== undefined && category.beds !== null && category.beds !== '') ? String(category.beds) : '1',
+      defaultPrice: (category.defaultPrice !== undefined && category.defaultPrice !== null && category.defaultPrice !== '') ? String(category.defaultPrice) : '',
       isActive: category.isActive,
       imageUrl: category.imageUrl || '',
       pictures: category.pictures || [],
@@ -452,9 +462,9 @@ const RoomCategoryPage = () => {
         category={selectedCategoryForGallery}
       />
 
-      <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-200">
+      <div className="bg-white rounded-xl p-2 sm:p-4 md:p-6 lg:p-8 shadow-xl border border-gray-200 w-full max-w-full overflow-x-auto">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 pb-3 sm:pb-4 border-b border-gray-300">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-4 sm:mb-6 pb-2 sm:pb-4 border-b border-gray-300 gap-2 md:gap-0">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-3 md:mb-0 flex items-center text-center md:text-left w-full justify-center md:justify-start">
             <Tag className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 text-blue-700" />
             Room Categories
@@ -476,7 +486,7 @@ const RoomCategoryPage = () => {
         </div>
 
         {/* Search Bars */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="relative">
             <input
               type="text"
@@ -524,87 +534,65 @@ const RoomCategoryPage = () => {
             <Info className="inline-block h-6 w-6 mr-2 text-gray-400" /> No room categories found for your search criteria.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {currentCategories.map((cat) => (
               <div
                 key={cat._id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 transform transition-transform duration-200 hover:scale-103 hover:shadow-xl flex flex-col"
+                className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-2xl transition-all duration-200 flex flex-col min-w-[210px] max-w-xs mx-auto h-full"
+                style={{ minHeight: '270px', maxHeight: '370px' }}
               >
-                <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+                <div className="relative w-full h-36 sm:h-44 md:h-40 lg:h-44 xl:h-48 overflow-hidden flex-shrink-0">
                   <img
                     src={cat.imageUrl}
                     alt={cat.name}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x250/E0E0E0/616161?text=Room+Image"; }}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x250/E0E0E0/616161?text=Room+Image'; }}
                   />
-                  <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold
+                  <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold
                     ${cat.isActive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'} shadow-md`}>
                     {cat.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 
-                <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                    <BedSingle size={20} className="mr-2 text-blue-600" /> {cat.name}
+                <div className="p-3 flex flex-col flex-grow">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 flex items-center truncate">
+                    <BedSingle size={18} className="mr-1 text-blue-600" /> {cat.name}
                   </h3>
-                  <p className="text-gray-700 text-sm mb-3 flex-grow">
+                  <p className="text-gray-600 text-xs mb-2 line-clamp-2 min-h-[32px]">
                     {cat.description || <span className="text-gray-400 italic">No description provided.</span>}
                   </p>
-
-                  <div className="flex items-center justify-between text-gray-800 mb-4">
-                    <span className="flex items-center text-lg font-semibold text-green-700">
-                      <DollarSign size={18} className="mr-1" />
-                      ₹{typeof cat.defaultPrice === 'number' ? cat.defaultPrice.toFixed(2) : 'N/A'}
-                    </span>
-                    {/* Updated Capacity / Guests Display: Show 0 if capacity is 0 */}
-                    <span className="flex items-center text-lg font-semibold text-blue-800">
-                      <Users size={18} className="mr-1" />
-                      {/* We're now guaranteed `cat.capacity` is a number due to parsing in fetchCategoriesData */}
-                      {`${cat.capacity} Guests`}
-                    </span>
+                  {/* Removed guest, price, and beds from card display as requested */}
+                  <div className="flex gap-2 mt-auto">
+                    <button
+                      onClick={() => handleEditClick(cat)}
+                      className="flex-1 flex items-center justify-center px-2 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-xs font-semibold shadow-sm"
+                      title={`Edit ${cat.name}`}
+                    >
+                      <Edit size={14} className="mr-1" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(cat)}
+                      className="flex-1 flex items-center justify-center px-2 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-xs font-semibold shadow-sm"
+                      title={`Delete ${cat.name}`}
+                    >
+                      <Trash2 size={14} className="mr-1" /> Delete
+                    </button>
                   </div>
-                  <div className="flex items-center text-gray-800 mb-4">
-                    {/* Updated Beds Display: Show 0 if beds is 0 */}
-                    <span className="flex items-center text-base font-medium text-gray-600">
-                      <BedSingle size={18} className="mr-1" />
-                      {/* We're now guaranteed `cat.beds` is a number due to parsing in fetchCategoriesData */}
-                      {`${cat.beds} Beds`}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col gap-2 mt-auto">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleBookNowClick(cat.name)}
-                        className="flex items-center justify-center px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
-                        title={`Book ${cat.name}`}
-                      >
-                        <CalendarPlus size={16} className="mr-1" /> Book
-                      </button>
-                      <button
-                        onClick={() => handlePicturesClick(cat)}
-                        className="flex items-center justify-center px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
-                        title={`View pictures for ${cat.name}`}
-                      >
-                        <Image size={16} className="mr-1" /> Pictures
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleEditClick(cat)}
-                        className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
-                        title={`Edit ${cat.name}`}
-                      >
-                        <Edit size={16} className="mr-1" /> Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(cat)}
-                        className="flex items-center justify-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-semibold shadow-sm"
-                        title={`Delete ${cat.name}`}
-                      >
-                        <Trash2 size={16} className="mr-1" /> Delete
-                      </button>
-                    </div>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => handleBookNowClick(cat.name)}
+                      className="flex-1 flex items-center justify-center px-2 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 text-xs font-semibold shadow-sm"
+                      title={`Book ${cat.name}`}
+                    >
+                      <CalendarPlus size={14} className="mr-1" /> Book
+                    </button>
+                    <button
+                      onClick={() => handlePicturesClick(cat)}
+                      className="flex-1 flex items-center justify-center px-2 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200 text-xs font-semibold shadow-sm"
+                      title={`View pictures for ${cat.name}`}
+                    >
+                      <Image size={14} className="mr-1" /> Pictures
+                    </button>
                   </div>
                 </div>
               </div>
@@ -613,7 +601,7 @@ const RoomCategoryPage = () => {
         )}
 
         {totalPages > 1 && (
-          <div className="flex justify-center mt-6 flex-wrap gap-1.5 sm:gap-2">
+          <div className="flex justify-center mt-4 sm:mt-6 flex-wrap gap-1.5 sm:gap-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
@@ -666,45 +654,58 @@ const RoomCategoryPage = () => {
               placeholder="e.g., Spacious room with king-sized bed, city view, balcony."
             ></textarea>
           </div>
-          <div className="flex flex-col gap-3">
-            <label htmlFor="capacity" className="font-semibold text-gray-700">Max Capacity <span className="text-red-500">*</span></label>
-            <input
-              type="number"
-              id="capacity"
-              name="capacity"
-              value={newCategoryData.capacity}
-              onChange={handleInputChange}
-              min="1"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-700 text-white focus:border-blue-500 focus:outline-none"
-              placeholder="e.g., 2"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-3">
-            <label htmlFor="beds" className="font-semibold text-gray-700">Number of Beds <span className="text-red-500">*</span></label>
-            <input
-              type="number"
-              id="beds"
-              name="beds"
-              value={newCategoryData.extra_bed}
-              onChange={handleInputChange}
-              min="1"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-700 text-white focus:border-blue-500 focus:outline-none"
-              placeholder="e.g., 1 King, 2 Twin"
-              required
-            />
-          </div>
+          {/* Removed guest, price, and beds fields as requested */}
           <div className="flex flex-col gap-3 col-span-1 md:col-span-2">
-            <label htmlFor="imageUrl" className="font-semibold text-gray-700">Main Image URL</label>
+            <label htmlFor="imageFile" className="font-semibold text-gray-700">Main Image</label>
             <input
-              type="url"
-              id="imageUrl"
-              name="imageUrl"
-              value={newCategoryData.imageUrl}
-              onChange={handleInputChange}
+              type="file"
+              id="imageFile"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const MAX_WIDTH = 1024;
+                const MAX_HEIGHT = 1024;
+                const QUALITY = 0.7;
+                const img = new window.Image();
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                      if (width > height) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                      } else {
+                        width = Math.round((width * MAX_HEIGHT) / height);
+                        height = MAX_HEIGHT;
+                      }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Convert to base64 string (data URL)
+                    const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+                    setNewCategoryData((prev) => ({ ...prev, imageUrl: dataUrl }));
+                  };
+                  img.onerror = () => {
+                    toast.error('Invalid image file.');
+                  };
+                  img.src = ev.target.result;
+                };
+                reader.onerror = () => {
+                  toast.error('Failed to read image file.');
+                };
+                reader.readAsDataURL(file);
+              }}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-700 text-white focus:border-blue-500 focus:outline-none"
-              placeholder="e.g., https://example.com/room-image.jpg"
             />
+            {newCategoryData.imageUrl && (
+              <img src={newCategoryData.imageUrl} alt="Preview" className="mt-2 rounded-lg max-h-40 object-contain border" />
+            )}
           </div>
           <div className="flex items-center gap-2 col-span-1 md:col-span-2 mt-2">
             <input
